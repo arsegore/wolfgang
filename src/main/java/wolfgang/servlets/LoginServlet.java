@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import wolfgang.config.DatabaseConfig;
 import wolfgang.entities.User;
 import wolfgang.repositories.UserRepository;
 import wolfgang.utils.FlashMessageUtils;
@@ -15,6 +16,11 @@ import java.io.IOException;
 
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
+    @Override
+    public void init() throws ServletException {
+        DatabaseConfig.init(getServletContext());
+    }
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.getRequestDispatcher("/WEB-INF/login.jsp").forward(req, resp);

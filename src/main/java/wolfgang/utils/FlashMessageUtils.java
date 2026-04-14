@@ -16,13 +16,15 @@ public class FlashMessageUtils {
 
         String message = (String) session.getAttribute("flash_message");
         session.removeAttribute("flash_message");
-        session.removeAttribute("flash_type");
         return message;
     }
 
     public static String getType(HttpServletRequest req) {
         HttpSession session = req.getSession(false);
         if (session == null) return null;
-        return (String) session.getAttribute("flash_type");
+
+        String type = (String) session.getAttribute("flash_type");
+        session.removeAttribute("flash_type");
+        return type;
     }
 }
