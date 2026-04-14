@@ -2,6 +2,8 @@ package wolfgang.repositories;
 
 import wolfgang.config.DatabaseConfig;
 import wolfgang.entities.User;
+import wolfgang.utils.PasswordUtils;
+
 import java.sql.*;
 import java.time.LocalDateTime;
 
@@ -14,32 +16,30 @@ public class UserRepository {
      * @param username
      * @param email
      * @param password
+     * @returns vrai si l'insertion a réussi, faux sinon
      */
-    public static void createUser(String username, String email, String password) {
-        try {
-            Connection con = DriverManager.getConnection(
-                    DatabaseConfig.DB_URL,
-                    DatabaseConfig.DB_LOGIN,
-                    DatabaseConfig.DB_PASSWD
-            );
-
-            String sql = """
+    public static boolean createUser(String username, String email, String password) {
+        String sql = """
 					INSERT INTO users (username, email, password)
 					VALUES (?, ?, ?);
 					""";
 
+        try (
+            Connection con = DriverManager.getConnection(
+                DatabaseConfig.DB_URL,
+                DatabaseConfig.DB_LOGIN,
+                DatabaseConfig.DB_PASSWD)
+            ;
             PreparedStatement stmt = con.prepareStatement(sql);
+        ){
             stmt.setString(1, username);
             stmt.setString(2, email);
             stmt.setString(3, password);
 
-            int result = stmt.executeUpdate();
-
-            stmt.close();
-            con.close();
-
+            return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
@@ -49,21 +49,20 @@ public class UserRepository {
      */
     public static User findById(int id) {
         User user = null;
-
-        try {
-            Connection con = DriverManager.getConnection(
-                    DatabaseConfig.DB_URL,
-                    DatabaseConfig.DB_LOGIN,
-                    DatabaseConfig.DB_PASSWD
-            );
-
-            String sql = """
+        String sql = """
 					SELECT *
 					FROM users
 					WHERE id = ?;
 					""";
 
+        try (
+            Connection con = DriverManager.getConnection(
+                    DatabaseConfig.DB_URL,
+                    DatabaseConfig.DB_LOGIN,
+                    DatabaseConfig.DB_PASSWD
+            );
             PreparedStatement stmt = con.prepareStatement(sql);
+        ) {
             stmt.setInt(1, id);
             ResultSet resultSet = stmt.executeQuery();
 
@@ -77,9 +76,52 @@ public class UserRepository {
                         resultSet.getObject("updated_at", LocalDateTime.class)
                 );
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
-            stmt.close();
-            con.close();
+        return user;
+    }
+
+    /**
+     *
+     * @param username
+     * @param password
+     * @return L'utilisateur correspondant
+     */
+    public static User authenticate(String username, String password) {
+        User user = null;
+        String sql = """
+                SELECT id, username, email, password, created_at, updated_at
+                FROM users
+                WHERE username = ?;
+                """;
+
+        try (
+            Connection con = DriverManager.getConnection(
+                    DatabaseConfig.DB_URL,
+                    DatabaseConfig.DB_LOGIN,
+                    DatabaseConfig.DB_PASSWD
+            );
+            PreparedStatement stmt = con.prepareStatement(sql);
+        ) {
+            stmt.setString(1, username);
+            ResultSet resultSet = stmt.executeQuery();
+
+            if (resultSet.next()) {
+                // vérification du mdp saisi par l'utilisateur
+                if (PasswordUtils.verifyPassword(password, resultSet.getString("password"))) {
+                    user = new User(
+                            resultSet.getInt("id"),
+                            resultSet.getString("username"),
+                            resultSet.getString("email"),
+                            resultSet.getString("password"),
+                            resultSet.getObject("created_at", LocalDateTime.class),
+                            resultSet.getObject("updated_at", LocalDateTime.class)
+                    );
+                }
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
