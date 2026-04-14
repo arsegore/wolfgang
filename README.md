@@ -26,3 +26,8 @@ Oubliez pas d'installer docker avant, évidemment, [cf la doc](https://docs.dock
 Pour lancer les conteneurs : `docker compose up -d`  
 Pour fermer les conteneurs : `docker compose down`  
 Pour voir les conteneurs qui tournent : `docker ps`
+
+### Rafraichir le projet
+Comme tomcat est dans docker, les modifs sont pas automatiquement prises
+en compte, du coup j'ai fait un mini script `reload.sh` qu'il suffit de mettre
+en cible sur votre IntelliJ, et vous pourrez rafraîchir le projet juste en 1 clic
