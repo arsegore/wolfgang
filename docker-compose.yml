@@ -1,29 +1,38 @@
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: wolfgang-mysql
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: wolfgang_db
-      MYSQL_USER: dev
-      MYSQL_PASSWORD: dev
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
+    mysql:
+        image: mysql:8.0
+        container_name: wolfgang-mysql
+        restart: unless-stopped
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: wolfgang_db
+            MYSQL_USER: dev
+            MYSQL_PASSWORD: dev
+        ports:
+            - "3306:3306"
+        volumes:
+            - mysql_data:/var/lib/mysql
 
-  phpmyadmin:
-    image: phpmyadmin:latest
-    container_name: wolfgang-phpmyadmin
-    restart: unless-stopped
-    environment:
-      PMA_HOST: mysql
-      PMA_PORT: 3306
-    ports:
-      - "8081:80"
-    depends_on:
-      - mysql
+    phpmyadmin:
+        image: phpmyadmin:latest
+        container_name: wolfgang-phpmyadmin
+        restart: unless-stopped
+        environment:
+            PMA_HOST: mysql
+            PMA_PORT: 3306
+        ports:
+            - "8081:80"
+        depends_on:
+            - mysql
+    tomcat:
+        image: tomcat:11-jdk21
+        container_name: wolfgang-tomcat
+        ports:
+            - "8080:8080"
+        volumes:
+            - ./target/wolfgang.war:/usr/local/tomcat/webapps/wolfgang.war
+        depends_on:
+            - mysql
 
 volumes:
-  mysql_data:
+    mysql_data:

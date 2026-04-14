@@ -1,9 +1,12 @@
-package io.github.arsegore.wolfgang;
+package wolfgang;
 
 import java.io.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
 
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
+import wolfgang.config.DatabaseConfig;
 
 @WebServlet(name = "helloServlet", value = "/hello-servlet")
 public class HelloServlet extends HttpServlet {

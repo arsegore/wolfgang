@@ -3,4 +3,21 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
          version="6.0">
+    <display-name>Wolfgang</display-name>
+    <context-param>
+        <param-name>JDBC_DRIVER</param-name>
+        <param-value>com.mysql.cj.jdbc.Driver</param-value>
+    </context-param>
+    <context-param>
+        <param-name>JDBC_URL</param-name>
+        <param-value>jdbc:mysql://mysql:3306/wolfgang_db</param-value>
+    </context-param>
+    <context-param>
+        <param-name>JDBC_LOGIN</param-name>
+        <param-value>dev</param-value>
+    </context-param>
+    <context-param>
+        <param-name>JDBC_PASSWORD</param-name>
+        <param-value>dev</param-value>
+    </context-param>
 </web-app>
