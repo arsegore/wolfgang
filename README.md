@@ -6,12 +6,10 @@ complexe mais au moins avec les features de base (et on verra ensuite)
 Gestion d'utilisateurs, relations, listes de musiques, etc...
 
 ## Configuration
-### Sur IntelliJ
-Dans `Services > Tomcat > Tomcat X.X.X > Clic Droit > Edit Configuration > Deployment`, 
-bien changer l'URL du contexte : `/`
-
-### Sur Eclipse
-Force à vous 😹
+### IDE
+Pas de config particulière en théorie, vu que tous les services tournent via Docker,
+ça devrait être indépendant (mais si tt le monde se met pas sur le goatesque IntelliJ)
+faudra qd mm que je check Eclipse
 
 ### Docker
 En gros ça permet de faire tourner les services dont on a besoin (mysql, phpmyadmin,
