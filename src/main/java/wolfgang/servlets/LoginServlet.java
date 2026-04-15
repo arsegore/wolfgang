@@ -23,6 +23,13 @@ public class LoginServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        HttpSession session = req.getSession();
+
+        // si déjà connecté
+        if (session.getAttribute("user") != null) {
+            resp.sendRedirect(req.getContextPath() + "/");
+            return;
+        }
         req.getRequestDispatcher("/WEB-INF/login.jsp").forward(req, resp);
     }
 
@@ -34,12 +41,12 @@ public class LoginServlet extends HttpServlet {
         String password = req.getParameter("password");
 
         if (username == null || username.isBlank()) {
-            req.setAttribute("error", "Veuillez entrer un nom d'utilisateur");
+            FlashMessageUtils.setFlash(req, "error", "Veuillez entrer un nom d'utilisateur");
             req.getRequestDispatcher("/WEB-INF/login.jsp").forward(req, resp);
             return;
         }
         if (password == null || password.isBlank()) {
-            req.setAttribute("error", "Veuillez entrer un mot de passe");
+            FlashMessageUtils.setFlash(req, "error", "Veuillez entrer un mot de passe");
             req.getRequestDispatcher("/WEB-INF/login.jsp").forward(req, resp);
             return;
         }

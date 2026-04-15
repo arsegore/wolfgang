@@ -19,6 +19,7 @@
 
             <button type="submit">Se connecter</button>
         </form>
+        <p>Vous n'avez pas encore de compte ? <a href="/wolfgang/register">Inscrivez-vous</a> !</p>
     </div>
 </div>
 
