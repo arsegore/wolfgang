@@ -7,6 +7,7 @@
   <%@ include file="include/flash.jsp"%>
 
   <h1>Bienvenue sur Wolfgang</h1>
+  <a href="/wolfgang/logout">Déconnexion</a>
 </div>
 
 <%@include file="include/footer.jsp"%>

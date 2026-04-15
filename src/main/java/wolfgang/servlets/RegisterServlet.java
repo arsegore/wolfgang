@@ -23,6 +23,13 @@ public class RegisterServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        HttpSession session = req.getSession();
+
+        // si déjà connecté
+        if (session.getAttribute("user") != null) {
+            resp.sendRedirect(req.getContextPath() + "/");
+            return;
+        }
         req.getRequestDispatcher("/WEB-INF/register.jsp").forward(req, resp);
     }
 
@@ -35,17 +42,17 @@ public class RegisterServlet extends HttpServlet {
         String password = req.getParameter("password");
 
         if (username == null || username.isBlank()) {
-            req.setAttribute("error", "Nom d'utilisateur invalide.");
+            FlashMessageUtils.setFlash(req, "error", "Nom d'utilisateur invalide.");
             req.getRequestDispatcher("/WEB-INF/register.jsp").forward(req, resp);
             return;
         }
         if (email == null || email.isBlank()) {
-            req.setAttribute("error", "Email invalide.");
+            FlashMessageUtils.setFlash(req, "error", "Email invalide.");
             req.getRequestDispatcher("/WEB-INF/register.jsp").forward(req, resp);
             return;
         }
         if (password == null || password.isBlank()) {
-            req.setAttribute("error", "Mot de passe invalide.");
+            FlashMessageUtils.setFlash(req, "error", "Mot de passe invalide.");
             req.getRequestDispatcher("/WEB-INF/register.jsp").forward(req, resp);
             return;
         }
