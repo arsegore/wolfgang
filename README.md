@@ -6,12 +6,10 @@ complexe mais au moins avec les features de base (et on verra ensuite)
 Gestion d'utilisateurs, relations, listes de musiques, etc...
 
 ## Configuration
-### Sur IntelliJ
-Dans `Services > Tomcat > Tomcat X.X.X > Clic Droit > Edit Configuration > Deployment`, 
-bien changer l'URL du contexte : `/`
-
-### Sur Eclipse
-Force à vous 😹
+### IDE
+Pas de config particulière en théorie, vu que tous les services tournent via Docker,
+ça devrait être indépendant (mais si tt le monde se met pas sur le goatesque IntelliJ)
+faudra qd mm que je check Eclipse
 
 ### Docker
 En gros ça permet de faire tourner les services dont on a besoin (mysql, phpmyadmin,
@@ -26,3 +24,8 @@ Oubliez pas d'installer docker avant, évidemment, [cf la doc](https://docs.dock
 Pour lancer les conteneurs : `docker compose up -d`  
 Pour fermer les conteneurs : `docker compose down`  
 Pour voir les conteneurs qui tournent : `docker ps`
+
+### Rafraichir le projet
+Comme tomcat est dans docker, les modifs sont pas automatiquement prises
+en compte, du coup j'ai fait un mini script `reload.sh` qu'il suffit de mettre
+en cible sur votre IntelliJ, et vous pourrez rafraîchir le projet juste en 1 clic
