@@ -9,7 +9,7 @@ import wolfgang.config.DatabaseConfig;
 
 import java.io.IOException;
 
-@WebServlet("/")
+@WebServlet("/home")
 public class HomeServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {

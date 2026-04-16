@@ -54,7 +54,7 @@ public class LoginServlet extends HttpServlet {
         User user = UserRepository.authenticate(username, password);
         if (user != null) {
             session.setAttribute("user", user);
-            resp.sendRedirect(req.getContextPath() + "/");
+            resp.sendRedirect(req.getContextPath() + "/home");
         } else {
             FlashMessageUtils.setFlash(req, "error", "Nom d'utilisateur ou mot de passe invalide.");
             resp.sendRedirect(req.getContextPath() + "/login");
