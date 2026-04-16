@@ -3,7 +3,7 @@
 <html>
 <head>
     <title>${param['title']}</title>
-    <link rel="stylesheet" href="css/pico.min.css">
-    <link rel="stylesheet" href="css/wolfgang.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/pico.min.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/wolfgang.css">
 </head>
 <body>
