@@ -1,2 +1,6 @@
-DELETE FROM users;
+DROP TABLE IF EXISTS notes;
+DROP TABLE IF EXISTS composition_members;
+DROP TABLE IF EXISTS tracks;
+DROP TABLE IF EXISTS compositions;
+DROP TABLE IF EXISTS instruments;
 DROP TABLE IF EXISTS users;
