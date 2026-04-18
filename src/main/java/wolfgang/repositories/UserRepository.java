@@ -1,7 +1,7 @@
 package wolfgang.repositories;
 
 import wolfgang.config.DatabaseConfig;
-import wolfgang.entities.User;
+import wolfgang.models.User;
 import wolfgang.utils.PasswordUtils;
 
 import java.sql.*;

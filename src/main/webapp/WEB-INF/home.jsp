@@ -1,4 +1,4 @@
-<%@ page import="wolfgang.entities.User" %>
+<%@ page import="wolfgang.models.User" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <jsp:include page="include/header.jsp">
