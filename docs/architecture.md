@@ -13,7 +13,7 @@ wolfgang/
 └── src/main/
     ├── java/wolfgang/
     │   ├── config/             # Config de l'appli (pour l'instant juste la BDD)
-    │   ├── entities/           # Objets accueillant les données de la BDD
+    │   ├── models/             # Objets accueillant les données de la BDD
     │   ├── repositories/       # Classes qui font le pont entre l'appli et la BDD (s'occupent de récupérer les infos dans la bdd pour créer des objets)
     │   ├── servlets/           # Les servlets (c assez parlant comme ça je pense)
     │   └── utils/              # Des classes pratiques, éventuellement à plusieurs endroits différents

@@ -1,4 +1,4 @@
-package wolfgang.entities;
+package wolfgang.models;
 
 import java.time.LocalDateTime;
 
