@@ -41,6 +41,32 @@ public class UserRepository {
         }
     }
 
+    public void update(User user) {
+        String sql = """
+					UPDATE users
+					SET username = ?, email = ?, password = ?, updated_at = ?
+					WHERE id = ?;
+					""";
+
+        try (
+                Connection con = DriverManager.getConnection(
+                        DatabaseConfig.DB_URL,
+                        DatabaseConfig.DB_LOGIN,
+                        DatabaseConfig.DB_PASSWD)
+                ;
+                PreparedStatement stmt = con.prepareStatement(sql);
+        ){
+            stmt.setString(1, user.getUsername());
+            stmt.setString(2, user.getEmail());
+            stmt.setString(3, user.getPassword());
+            stmt.setObject(4, LocalDateTime.now());
+            stmt.setInt(5, user.getId());
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      *
      * @param username
@@ -88,10 +114,10 @@ public class UserRepository {
     }
 
     /**
-     * Renvoie l'utilisateur correspondant à un id (ou null)
      * @param id
+     * @return L'utilisateur correspondant ou null
      */
-    public static User findById(int id) {
+    public User findById(int id) {
         User user = null;
         String sql = """
 					SELECT *
