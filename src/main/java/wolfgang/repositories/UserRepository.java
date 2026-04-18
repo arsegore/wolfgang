@@ -18,7 +18,7 @@ public class UserRepository {
      * @param password
      * @returns vrai si l'insertion a réussi, faux sinon
      */
-    public static boolean createUser(String username, String email, String password) {
+    public boolean createUser(String username, String email, String password) {
         String sql = """
 					INSERT INTO users (username, email, password)
 					VALUES (?, ?, ?);
@@ -89,7 +89,7 @@ public class UserRepository {
      * @param password
      * @return L'utilisateur correspondant
      */
-    public static User authenticate(String username, String password) {
+    public User authenticate(String username, String password) {
         User user = null;
         String sql = """
                 SELECT id, username, email, password, created_at, updated_at

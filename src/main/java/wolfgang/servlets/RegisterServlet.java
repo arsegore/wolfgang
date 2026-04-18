@@ -16,9 +16,12 @@ import java.io.IOException;
 
 @WebServlet("/register")
 public class RegisterServlet extends HttpServlet {
+    private UserRepository userRepository;
+
     @Override
     public void init() throws ServletException {
         DatabaseConfig.init(getServletContext());
+        userRepository = new UserRepository();
     }
 
     @Override
@@ -57,7 +60,7 @@ public class RegisterServlet extends HttpServlet {
             return;
         }
 
-        if (UserRepository.createUser(
+        if (userRepository.createUser(
                 username,
                 email,
                 PasswordUtils.hashPassword(password)

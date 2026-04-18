@@ -15,9 +15,12 @@ import java.io.IOException;
 
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
+    private UserRepository userRepository;
+
     @Override
     public void init() throws ServletException {
         DatabaseConfig.init(getServletContext());
+        userRepository = new UserRepository();
     }
 
     @Override
@@ -50,7 +53,7 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
-        User user = UserRepository.authenticate(username, password);
+        User user = userRepository.authenticate(username, password);
         if (user != null) {
             session.setAttribute("user", user);
             resp.sendRedirect(req.getContextPath() + "/home");
