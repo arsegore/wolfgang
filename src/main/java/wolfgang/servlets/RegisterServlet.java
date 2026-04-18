@@ -1,6 +1,5 @@
 package wolfgang.servlets;
 
-import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -8,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import wolfgang.config.DatabaseConfig;
+import wolfgang.models.User;
 import wolfgang.repositories.UserRepository;
 import wolfgang.utils.FlashMessageUtils;
 import wolfgang.utils.PasswordUtils;
@@ -60,11 +60,11 @@ public class RegisterServlet extends HttpServlet {
             return;
         }
 
-        if (userRepository.createUser(
+        if (userRepository.create(new User(
                 username,
                 email,
                 PasswordUtils.hashPassword(password)
-        )) {
+        ))) {
             FlashMessageUtils.setFlash(req, "success", "Inscription réussie.");
             resp.sendRedirect(req.getContextPath() + "/login");
         } else {
