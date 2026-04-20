@@ -2,7 +2,9 @@ package wolfgang.models;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Composition {
     private int id;
@@ -23,7 +25,7 @@ public class Composition {
 
     private List<Track> tracks = new ArrayList<>();
 
-    private List<CompositionMember> members = new ArrayList<>();
+    private Map<User, String> members = new HashMap<>();
 
     public Composition(){}
 
@@ -123,17 +125,19 @@ public class Composition {
         tracks.remove(track);
     }
 
-    public List<CompositionMember> getMembers() {
+    public Map<User, String> getMembers() {
         return members;
     }
 
-    public void addMember(CompositionMember member) {
-        if (!members.contains(member)) {
-            members.add(member);
-        }
+    public void addMember(User user, String role) {
+        members.put(user, role);
     }
 
-    public void removeMember(CompositionMember member) {
-        members.remove(member);
+    public void removeMember(User user) {
+        members.remove(user);
+    }
+
+    public String getRoleOf(User user) {
+        return members.get(user);
     }
 }
