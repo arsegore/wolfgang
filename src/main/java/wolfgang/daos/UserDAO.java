@@ -1,4 +1,4 @@
-package wolfgang.repositories;
+package wolfgang.daos;
 
 import wolfgang.config.DatabaseConfig;
 import wolfgang.models.User;
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 // TODO vérifications mdp, hachage, gestion d'erreurs, logs propres...
 
-public class UserRepository {
+public class UserDAO {
 
     /**
      * Insère un utilisateur dans la bdd

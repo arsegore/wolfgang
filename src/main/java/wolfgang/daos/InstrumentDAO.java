@@ -1,4 +1,4 @@
-package wolfgang.repositories;
+package wolfgang.daos;
 
 import wolfgang.config.DatabaseConfig;
 import wolfgang.models.Instrument;
@@ -7,7 +7,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InstrumentRepository {
+public class InstrumentDAO {
 
     /**
      * @param id
