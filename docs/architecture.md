@@ -14,7 +14,7 @@ wolfgang/
     ├── java/wolfgang/
     │   ├── config/             # Config de l'appli (pour l'instant juste la BDD)
     │   ├── models/             # Objets accueillant les données de la BDD
-    │   ├── repositories/       # Classes qui font le pont entre l'appli et la BDD (s'occupent de récupérer les infos dans la bdd pour créer des objets)
+    │   ├── daos/               # Classes qui font le pont entre l'appli et la BDD
     │   ├── servlets/           # Les servlets (c assez parlant comme ça je pense)
     │   └── utils/              # Des classes pratiques, éventuellement à plusieurs endroits différents
     │
@@ -33,8 +33,8 @@ wolfgang/
         ^ Ici y aura à l'avenir un répertoire js/
 ```
 **Remarques :** 
-* Toutes les requêtes SQL doivent être dans un repository. Pour une entité X, on créé une classe 
-XRepository, avec **une méthode par requête**.
+* Toutes les requêtes SQL doivent être dans un DAO. Pour une entité X, on créé une classe 
+xDAO, avec **une méthode par requête**.
 * Bien séparer les entités des repositories, d'ailleurs c'est simple on ne met pas de méthode autre que les
     getters & setters dans les entités. Rien d'autre que des reqûetes SQL dans les repositories non plus. Si
     besoin de méthodes particulières qui interagissent sur des entités (j'ai pas d'exemple en tête mais ça risque)

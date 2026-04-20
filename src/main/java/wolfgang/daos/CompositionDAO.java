@@ -1,4 +1,4 @@
-package wolfgang.repositories;
+package wolfgang.daos;
 
 import wolfgang.config.DatabaseConfig;
 import wolfgang.models.Composition;
@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CompositionRepository {
+public class CompositionDAO {
 
     /**
      * Insère une nouvelle composition dans la bdd

@@ -1,4 +1,4 @@
-package wolfgang.repositories;
+package wolfgang.daos;
 
 import wolfgang.config.DatabaseConfig;
 import wolfgang.models.Note;
@@ -7,7 +7,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NoteRepository {
+public class NoteDAO {
 
     /**
      * Insère une nouvelle note dans la bdd

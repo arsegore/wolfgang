@@ -8,19 +8,19 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import wolfgang.config.DatabaseConfig;
 import wolfgang.models.User;
-import wolfgang.repositories.UserRepository;
+import wolfgang.daos.UserDAO;
 import wolfgang.utils.FlashMessageUtils;
 
 import java.io.IOException;
 
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
-    private UserRepository userRepository;
+    private UserDAO userDAO;
 
     @Override
     public void init() throws ServletException {
         DatabaseConfig.init(getServletContext());
-        userRepository = new UserRepository();
+        userDAO = new UserDAO();
     }
 
     @Override
@@ -53,7 +53,7 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
-        User user = userRepository.authenticate(username, password);
+        User user = userDAO.authenticate(username, password);
         if (user != null) {
             session.setAttribute("user", user);
             resp.sendRedirect(req.getContextPath() + "/home");

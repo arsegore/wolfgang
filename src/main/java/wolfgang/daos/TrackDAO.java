@@ -1,4 +1,4 @@
-package wolfgang.repositories;
+package wolfgang.daos;
 
 import wolfgang.config.DatabaseConfig;
 import wolfgang.models.Composition;
@@ -9,7 +9,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TrackRepository {
+public class TrackDAO {
 
     /**
      * Insère une nouvelle piste dans la bdd
