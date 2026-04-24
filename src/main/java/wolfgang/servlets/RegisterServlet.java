@@ -1,6 +1,5 @@
 package wolfgang.servlets;
 
-import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -8,7 +7,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import wolfgang.config.DatabaseConfig;
-import wolfgang.repositories.UserRepository;
+import wolfgang.models.User;
+import wolfgang.daos.UserDAO;
 import wolfgang.utils.FlashMessageUtils;
 import wolfgang.utils.PasswordUtils;
 
@@ -16,9 +16,12 @@ import java.io.IOException;
 
 @WebServlet("/register")
 public class RegisterServlet extends HttpServlet {
+    private UserDAO userDAO;
+
     @Override
     public void init() throws ServletException {
         DatabaseConfig.init(getServletContext());
+        userDAO = new UserDAO();
     }
 
     @Override
@@ -57,11 +60,11 @@ public class RegisterServlet extends HttpServlet {
             return;
         }
 
-        if (UserRepository.createUser(
+        if (userDAO.create(new User(
                 username,
                 email,
                 PasswordUtils.hashPassword(password)
-        )) {
+        ))) {
             FlashMessageUtils.setFlash(req, "success", "Inscription réussie.");
             resp.sendRedirect(req.getContextPath() + "/login");
         } else {
