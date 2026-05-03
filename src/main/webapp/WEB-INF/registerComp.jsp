@@ -18,8 +18,10 @@
     <form action="" method="POST" class="form-example">
         <label for="nameComp">Nom de votre Composition :</label>
         <input type="text" name="nameComp" id="nameComp" required/>
+
         <label for="tempo">>uel est votre temp ?</label>
         <input type="number" name="tempo" id="tempo" required min="20" max="2000"/>
+
         <label for="access">Type d\'acces</label>
         <select name="accessType" id="accessType">
             <option value="">--veuillez choisir une option--</option>
