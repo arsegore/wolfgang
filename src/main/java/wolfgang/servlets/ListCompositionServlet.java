@@ -15,8 +15,8 @@ import wolfgang.models.User;
 import java.io.IOException;
 import java.util.*;
 
-@WebServlet("/composition/display")
-public class DisplayCompositionServlet extends HttpServlet {
+@WebServlet("/composition/list")
+public class ListCompositionServlet extends HttpServlet {
     private UserDAO userDAO;
     private CompositionDAO compositionDAO;
 
@@ -42,7 +42,7 @@ public class DisplayCompositionServlet extends HttpServlet {
         publicCompositions = compositionDAO.findPublic();
         req.setAttribute("publicCompositions", publicCompositions);
 
-        getServletContext().getRequestDispatcher("/WEB-INF/displayComposition.jsp").forward(req,resp);
+        getServletContext().getRequestDispatcher("/WEB-INF/list_compositions.jsp").forward(req,resp);
     }
 
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

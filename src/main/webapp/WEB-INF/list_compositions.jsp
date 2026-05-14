@@ -18,7 +18,7 @@
                 <div class="col-12">
                     <div class="alert alert-info border shadow-sm">
                         <i class="bi bi-info-circle me-2"></i>
-                        Connectez-vous pour créer et retrouver vos compositions personnelles.
+                        Connectez-vous pour créer et retrouver vos compositions.
                         <a href="${pageContext.request.contextPath}/login" class="alert-link ms-2">Se connecter</a>
                     </div>
                 </div>
