@@ -24,7 +24,7 @@
                             <label for="accessType" class="form-label">Type d'accès</label>
                             <select class="form-select" name="accessType" id="accessType">
                                 <option value="">-- Veuillez choisir une option --</option>
-                                <option value="ownerOnly">Vous uniquement</option>
+                                <option value="private">Vous uniquement</option>
                                 <option value="public">Publique</option>
                                 <option value="link">Utilisateurs disposant du lien</option>
                             </select>
