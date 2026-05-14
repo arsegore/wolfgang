@@ -1,5 +1,8 @@
 package wolfgang.servlets;
 
+import java.io.IOException;
+import java.util.List;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -11,9 +14,6 @@ import wolfgang.daos.CompositionDAO;
 import wolfgang.daos.UserDAO;
 import wolfgang.models.Composition;
 import wolfgang.models.User;
-
-import java.io.IOException;
-import java.util.*;
 
 @WebServlet("/composition/list")
 public class ListCompositionServlet extends HttpServlet {
