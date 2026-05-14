@@ -13,11 +13,11 @@
                     <h1 class="card-title h3 mb-4">Créez votre composition</h1>
                     <form action="" method="POST">
                         <div class="mb-3">
-                            <label for="nameComp" class="form-label">Nom de votre composition</label>
+                            <label for="nameComp" class="form-label">Nom</label>
                             <input type="text" class="form-control" name="nameComp" id="nameComp" required>
                         </div>
                         <div class="mb-3">
-                            <label for="tempo" class="form-label">Quel est votre tempo ?</label>
+                            <label for="tempo" class="form-label">Tempo</label>
                             <input type="number" class="form-control" name="tempo" id="tempo" required min="20" max="2000">
                         </div>
                         <div class="mb-3">
