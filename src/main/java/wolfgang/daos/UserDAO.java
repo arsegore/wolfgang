@@ -6,30 +6,29 @@ import wolfgang.utils.PasswordUtils;
 
 import java.sql.*;
 import java.time.LocalDateTime;
-
-// TODO vérifications mdp, hachage, gestion d'erreurs, logs propres...
+import java.util.ArrayList;
+import java.util.List;
 
 public class UserDAO {
 
     /**
      * Insère un utilisateur dans la bdd
-     * @param user
-     * @returns vrai si l'insertion a réussi, faux sinon
+     * @param user l'utilisateur à insérer
+     * @return vrai si l'insertion a réussi, faux sinon
      */
     public boolean create(User user) {
         String sql = """
-					INSERT INTO users (username, email, password)
-					VALUES (?, ?, ?);
-					""";
+                    INSERT INTO users (username, email, password)
+                    VALUES (?, ?, ?);
+                    """;
 
         try (
             Connection con = DriverManager.getConnection(
                 DatabaseConfig.DB_URL,
                 DatabaseConfig.DB_LOGIN,
-                DatabaseConfig.DB_PASSWD)
-            ;
+                DatabaseConfig.DB_PASSWD);
             PreparedStatement stmt = con.prepareStatement(sql);
-        ){
+        ) {
             stmt.setString(1, user.getUsername());
             stmt.setString(2, user.getEmail());
             stmt.setString(3, user.getPassword());
@@ -41,71 +40,98 @@ public class UserDAO {
         }
     }
 
-    public void update(User user) {
+    /**
+     * Met à jour un utilisateur
+     * @param user l'utilisateur à mettre à jour
+     * @return vrai si la mise à jour a réussi, faux sinon
+     */
+    public boolean update(User user) {
         String sql = """
-					UPDATE users
-					SET username = ?, email = ?, password = ?, updated_at = ?
-					WHERE id = ?;
-					""";
+                    UPDATE users
+                    SET username = ?, email = ?, password = ?, is_admin = ?, updated_at = ?
+                    WHERE id = ?;
+                    """;
 
         try (
-                Connection con = DriverManager.getConnection(
-                        DatabaseConfig.DB_URL,
-                        DatabaseConfig.DB_LOGIN,
-                        DatabaseConfig.DB_PASSWD)
-                ;
-                PreparedStatement stmt = con.prepareStatement(sql);
-        ){
+            Connection con = DriverManager.getConnection(
+                DatabaseConfig.DB_URL,
+                DatabaseConfig.DB_LOGIN,
+                DatabaseConfig.DB_PASSWD);
+            PreparedStatement stmt = con.prepareStatement(sql);
+        ) {
             stmt.setString(1, user.getUsername());
             stmt.setString(2, user.getEmail());
             stmt.setString(3, user.getPassword());
-            stmt.setObject(4, LocalDateTime.now());
-            stmt.setInt(5, user.getId());
+            stmt.setBoolean(4, user.isAdmin());
+            stmt.setObject(5, LocalDateTime.now());
+            stmt.setInt(6, user.getId());
 
+            return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
     /**
-     *
-     * @param username
-     * @param password
-     * @return L'utilisateur correspondant
+     * Supprime un utilisateur
+     * @param id l'identifiant de l'utilisateur
+     * @return vrai si la suppression a réussi, faux sinon
+     */
+    public boolean delete(int id) {
+        String sql = "DELETE FROM users WHERE id = ?;";
+
+        try (
+            Connection con = DriverManager.getConnection(
+                DatabaseConfig.DB_URL,
+                DatabaseConfig.DB_LOGIN,
+                DatabaseConfig.DB_PASSWD);
+            PreparedStatement stmt = con.prepareStatement(sql);
+        ) {
+            stmt.setInt(1, id);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * @param username le nom d'utilisateur
+     * @param password le mot de passe en clair
+     * @return l'utilisateur authentifié ou null
      */
     public User authenticate(String username, String password) {
         User user = null;
         String sql = """
-                SELECT id, username, email, password, created_at, updated_at
+                SELECT id, username, email, password, is_admin, created_at, updated_at
                 FROM users
                 WHERE username = ?;
                 """;
 
         try (
-                Connection con = DriverManager.getConnection(
-                        DatabaseConfig.DB_URL,
-                        DatabaseConfig.DB_LOGIN,
-                        DatabaseConfig.DB_PASSWD
-                );
-                PreparedStatement stmt = con.prepareStatement(sql);
+            Connection con = DriverManager.getConnection(
+                DatabaseConfig.DB_URL,
+                DatabaseConfig.DB_LOGIN,
+                DatabaseConfig.DB_PASSWD);
+            PreparedStatement stmt = con.prepareStatement(sql);
         ) {
             stmt.setString(1, username);
-            ResultSet resultSet = stmt.executeQuery();
+            ResultSet rs = stmt.executeQuery();
 
-            if (resultSet.next()) {
-                // vérification du mdp saisi par l'utilisateur
-                if (PasswordUtils.verifyPassword(password, resultSet.getString("password"))) {
+            if (rs.next()) {
+                if (PasswordUtils.verifyPassword(password, rs.getString("password"))) {
                     user = new User(
-                            resultSet.getInt("id"),
-                            resultSet.getString("username"),
-                            resultSet.getString("email"),
-                            resultSet.getString("password"),
-                            resultSet.getObject("created_at", LocalDateTime.class),
-                            resultSet.getObject("updated_at", LocalDateTime.class)
+                            rs.getInt("id"),
+                            rs.getString("username"),
+                            rs.getString("email"),
+                            rs.getString("password"),
+                            rs.getBoolean("is_admin"),
+                            rs.getObject("created_at", LocalDateTime.class),
+                            rs.getObject("updated_at", LocalDateTime.class)
                     );
                 }
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -114,36 +140,36 @@ public class UserDAO {
     }
 
     /**
-     * @param id
-     * @return L'utilisateur correspondant ou null
+     * @param id l'identifiant de l'utilisateur
+     * @return l'utilisateur correspondant ou null
      */
     public User findById(int id) {
         User user = null;
         String sql = """
-					SELECT *
-					FROM users
-					WHERE id = ?;
-					""";
+                    SELECT id, username, email, password, is_admin, created_at, updated_at
+                    FROM users
+                    WHERE id = ?;
+                    """;
 
         try (
             Connection con = DriverManager.getConnection(
-                    DatabaseConfig.DB_URL,
-                    DatabaseConfig.DB_LOGIN,
-                    DatabaseConfig.DB_PASSWD
-            );
+                DatabaseConfig.DB_URL,
+                DatabaseConfig.DB_LOGIN,
+                DatabaseConfig.DB_PASSWD);
             PreparedStatement stmt = con.prepareStatement(sql);
         ) {
             stmt.setInt(1, id);
-            ResultSet resultSet = stmt.executeQuery();
+            ResultSet rs = stmt.executeQuery();
 
-            if (resultSet.next()) {
+            if (rs.next()) {
                 user = new User(
-                        resultSet.getInt("id"),
-                        resultSet.getString("username"),
-                        resultSet.getString("email"),
-                        resultSet.getString("password"),
-                        resultSet.getObject("created_at", LocalDateTime.class),
-                        resultSet.getObject("updated_at", LocalDateTime.class)
+                        rs.getInt("id"),
+                        rs.getString("username"),
+                        rs.getString("email"),
+                        rs.getString("password"),
+                        rs.getBoolean("is_admin"),
+                        rs.getObject("created_at", LocalDateTime.class),
+                        rs.getObject("updated_at", LocalDateTime.class)
                 );
             }
         } catch (SQLException e) {
@@ -151,5 +177,43 @@ public class UserDAO {
         }
 
         return user;
+    }
+
+    /**
+     * @return la liste de tous les utilisateurs
+     */
+    public List<User> findAll() {
+        List<User> users = new ArrayList<>();
+        String sql = """
+                    SELECT id, username, email, password, is_admin, created_at, updated_at
+                    FROM users
+                    ORDER BY id;
+                    """;
+
+        try (
+            Connection con = DriverManager.getConnection(
+                DatabaseConfig.DB_URL,
+                DatabaseConfig.DB_LOGIN,
+                DatabaseConfig.DB_PASSWD);
+            PreparedStatement stmt = con.prepareStatement(sql);
+        ) {
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                users.add(new User(
+                        rs.getInt("id"),
+                        rs.getString("username"),
+                        rs.getString("email"),
+                        rs.getString("password"),
+                        rs.getBoolean("is_admin"),
+                        rs.getObject("created_at", LocalDateTime.class),
+                        rs.getObject("updated_at", LocalDateTime.class)
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return users;
     }
 }
