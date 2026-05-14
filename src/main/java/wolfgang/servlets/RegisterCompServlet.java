@@ -15,7 +15,7 @@ import wolfgang.utils.FlashMessageUtils;
 
 import java.io.IOException;
 
-@WebServlet("./registerComp")
+@WebServlet("/comp")
 public class RegisterCompServlet extends HttpServlet {
     private UserDAO userDAO;
 
