@@ -12,7 +12,16 @@ clean-bdd:
 load-bdd:
 	$(MYSQL_EXEC) < src/main/resources/schema.sql
 
-reload-bdd: clean-bdd load-bdd
+load-fixtures:
+	$(MYSQL_EXEC) < src/main/resources/fixtures.sql
+
+reload-bdd: clean-bdd load-bdd load-fixtures
+
+start-project:
+	./mvnw package && $(DOCKER_COMPOSE) up -d
+
+stop-project:
+	$(DOCKER_COMPOSE) down
 
 reload-project:
 	./mvnw package && $(DOCKER_COMPOSE) restart tomcat
