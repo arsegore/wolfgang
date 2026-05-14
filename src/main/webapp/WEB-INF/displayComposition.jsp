@@ -79,4 +79,6 @@
     </div>
 </div>
 
+<script src="${pageContext.request.contextPath}/js/Client.js"></script>
+
 <%@include file="include/footer.jsp"%>
