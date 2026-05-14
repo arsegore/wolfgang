@@ -3,6 +3,7 @@
 
 <jsp:include page="include/header.jsp">
     <jsp:param name="title" value="Tableau de bord — Wolfgang"/>
+    <jsp:param name="activePage" value="compositions"/>
 </jsp:include>
 
 <div class="container py-5">
