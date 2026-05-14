@@ -18,7 +18,7 @@ public class CompositionDAO {
      * @param composition
      * @return vrai si l'insertion a réussi, faux sinon
      */
-    public boolean create(Composition composition) {
+    public static boolean create(Composition composition) {
         String sql = """
 					INSERT INTO compositions (title, tempo, access_type, owner_id)
 					VALUES (?, ?, ?, ?);
