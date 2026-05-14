@@ -18,7 +18,7 @@ public class CompositionDAO {
      * @param composition
      * @return vrai si l'insertion a réussi, faux sinon
      */
-    public static boolean create(Composition composition) {
+    public boolean create(Composition composition) {
         String sql = """
 					INSERT INTO compositions (title, tempo, access_type, owner_id)
 					VALUES (?, ?, ?, ?);
@@ -391,7 +391,7 @@ public class CompositionDAO {
     /**
      * @return L'ensemble des compositions publiques
      */
-    public List<Composition> findPublic() {
+    public  List<Composition> findPublic() {
         List<Composition> compositions = new ArrayList<>();
         String sql = """
 					SELECT c.*, u.id as u_id, u.username, u.email, u.password,
