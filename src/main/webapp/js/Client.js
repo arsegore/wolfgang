@@ -1,4 +1,3 @@
-// On récupère le pseudo depuis la session Java via EL
 const username = "${sessionScope.user.username}";
 const socket = new WebSocket("ws://" + window.location.host + "${pageContext.request.contextPath}/chat/" + pseudo);
 
