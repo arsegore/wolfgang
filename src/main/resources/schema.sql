@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(255) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
+    is_admin TINYINT(1) DEFAULT 0,
     created_at DATETIME DEFAULT NOW(),
     updated_at DATETIME DEFAULT NOW()
 );
