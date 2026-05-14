@@ -32,6 +32,14 @@ public class User {
         this.updatedAt = updatedAt;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User)) return false;
+        User u = (User) o;
+        return id == u.id;
+    }
+
     public int getId() {
         return id;
     }
