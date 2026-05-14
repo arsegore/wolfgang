@@ -27,27 +27,32 @@
                 <li class="nav-item">
                     <a class="nav-link ${param.activePage == 'compositions' ? 'active' : ''}" href="${pageContext.request.contextPath}/composition/list">Compositions</a>
                 </li>
-                <c:if test="${not empty sessionScope.user}">
-                    <li class="nav-item">
-                        <a class="nav-link ${param.activePage == 'create' ? 'active' : ''}" href="${pageContext.request.contextPath}/composition/create">
-                            <i class="bi bi-plus-circle me-1"></i>Nouvelle composition
-                        </a>
-                    </li>
-                </c:if>
             </ul>
 
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
                 <c:choose>
                     <c:when test="${not empty sessionScope.user}">
                         <li class="nav-item me-2">
-                            <span class="navbar-text">
-                                <i class="bi bi-person-circle me-1"></i>${sessionScope.user.username}
-                            </span>
-                        </li>
-                        <li class="nav-item">
-                            <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-light btn-sm">
-                                <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
+                            <a class="btn btn-outline-light btn-sm ${param.activePage == 'create' ? 'active' : ''}"
+                               href="${pageContext.request.contextPath}/composition/create">
+                                <i class="bi bi-plus-circle me-1"></i>Nouvelle composition
                             </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" href="#"
+                               role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle fs-5"></i>
+                                <span>${sessionScope.user.username}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><h6 class="dropdown-header">${sessionScope.user.email}</h6></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="${pageContext.request.contextPath}/logout">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
                     </c:when>
                     <c:otherwise>
