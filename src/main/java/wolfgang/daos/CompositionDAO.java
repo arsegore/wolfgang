@@ -18,7 +18,7 @@ public class CompositionDAO {
      * @param composition
      * @return vrai si l'insertion a réussi, faux sinon
      */
-    public boolean create(Composition composition) {
+    public static boolean create(Composition composition) {
         String sql = """
 					INSERT INTO compositions (title, tempo, access_type, owner_id)
 					VALUES (?, ?, ?, ?);
@@ -159,12 +159,12 @@ public class CompositionDAO {
     public List<Composition> findByUser(int userId) {
         List<Composition> compositions = new ArrayList<>();
         String sql = """
-					SELECT DISTINCT c.*, u.id as u_id, u.username, u.email, u.password,
+					SELECT c.*, u.id as u_id, u.username, u.email, u.password,
 					       u.created_at as u_created_at, u.updated_at as u_updated_at
 					FROM compositions c
 					JOIN users u ON c.owner_id = u.id
-					LEFT JOIN composition_members cm ON c.id = cm.composition_id
-					WHERE c.owner_id = ? OR cm.user_id = ?;
+					JOIN composition_members cm ON c.id = cm.composition_id
+					WHERE cm.user_id = ?;
 					""";
 
         try (
@@ -175,7 +175,6 @@ public class CompositionDAO {
                 PreparedStatement stmt = con.prepareStatement(sql);
         ) {
             stmt.setInt(1, userId);
-            stmt.setInt(2, userId);
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
@@ -392,7 +391,7 @@ public class CompositionDAO {
     /**
      * @return L'ensemble des compositions publiques
      */
-    public  List<Composition> findPublic() {
+    public List<Composition> findPublic() {
         List<Composition> compositions = new ArrayList<>();
         String sql = """
 					SELECT c.*, u.id as u_id, u.username, u.email, u.password,
