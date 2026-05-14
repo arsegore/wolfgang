@@ -1,8 +1,11 @@
-const username = "${sessionScope.user.username}";
-const socket = new WebSocket("ws://" + window.location.host + "${pageContext.request.contextPath}/chat/" + pseudo);
+const configElement = document.getElementById("chat-config");
+const pseudo = configElement.getAttribute("data-pseudo");
+const contextPath = configElement.getAttribute("data-context");
+
+const socket = new WebSocket("ws://" + window.location.host + contextPath + "/chat/" + pseudo);
 
 socket.onopen = function(event){
-    consol.log("Connexion ouverte");
+    console.log("Connexion ouverte");
     ajouterMessage("Connexion ouverte avec le serveur");
 };
 
@@ -31,6 +34,5 @@ function send() {
 
 function ajouterMessage(message){
     let zone = document.getElementById("messages");
-    zone.innerHTML+=message + "<br>";
-    }
-}
+    zone.innerHTML += message + "<br>";
+   }

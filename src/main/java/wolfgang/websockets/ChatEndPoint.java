@@ -10,10 +10,10 @@ import jakarta.websocket.server.ServerEndpoint;
 
 import java.util.Hashtable;
 
-@ServerEndpoint(value="chat/{pseudo}")
+@ServerEndpoint(value="/chat/{pseudo}")
 public class ChatEndPoint {
     private static ChatEndPoint instance = new ChatEndPoint();
-    private Hashtable<String, Session> sessions = new Hashtable<>();
+    private static Hashtable<String, Session> sessions = new Hashtable<>();
 
     public void ChatEndPoint(){};
 
@@ -21,8 +21,8 @@ public class ChatEndPoint {
 
     @OnOpen
     public void onOpen(Session session, @PathParam("pseudo") String pseudo){
-        Session.getUserProperties().put("pseudo", pseudo);
-        Session.put(pseudo, session);
+        session.getUserProperties().put("pseudo", pseudo);
+        sessions.put(pseudo, session);
         sendMessage("Admin : connexion etablie par " + pseudo);
     }
 
@@ -41,7 +41,8 @@ public class ChatEndPoint {
 
     @OnMessage
     public void handleMessage(Session session, String message){
-        String monMessage = "pseudo : " + message;
+        String pseudo = (String) session.getUserProperties().get("pseudo");
+        String monMessage = pseudo + " : " + message;
         sendMessage(monMessage);
     }
 
@@ -51,7 +52,7 @@ public class ChatEndPoint {
             try{
                 session.getBasicRemote().sendText(monMessage);
             }catch (Exception exception){
-                system.err.println("Erreur d'envoie : " + exception.getMessage());
+                System.err.println("Erreur d'envoie : " + exception.getMessage());
             }
         }
     }
