@@ -7,8 +7,11 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     is_admin TINYINT(1) DEFAULT 0,
+    verification_token VARCHAR(255),
+    is_verified BOOLEAN DEFAULT FALSE,
     created_at DATETIME DEFAULT NOW(),
     updated_at DATETIME DEFAULT NOW()
+
 );
 
 CREATE TABLE IF NOT EXISTS instruments (
