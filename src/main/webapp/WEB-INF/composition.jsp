@@ -3,18 +3,22 @@
 
 
 <jsp:include page="include/header.jsp">
-    <jsp:param name="title" value="Nouvelle composition — Wolfgang"/>
+    <jsp:param name="title" value="${composition.title} — Wolfgang"/>
 </jsp:include>
 
 <div class="container py-5">
     <%@ include file="include/flash.jsp"%>
-    <h1>Bienvenue sur la page de la composition</h1>
+    <h1>${composition.title} (${composition.id})</h1>
 </div>
+
+<div class="card-body p-4">
+    <h4>Description</h4>
+    <p>${composition.description}</p>
+</div>
+
 
 <div>
     <ul>
-        <li>identifiant : ${composition.id}</li>
-        <li>Titre : ${composition.title}</li>
         <li>tempo : ${composition.tempo}</li>
         <li>acces : ${composition.accessType}</li>
         <li>date de création : ${composition.createdAt}</li>
