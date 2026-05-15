@@ -25,11 +25,33 @@ public class Profile extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession();
-        User user = (User) session.getAttribute("user");
+        User connectedUser = (User) session.getAttribute("user");
 
-        if (user != null) {
-            req.setAttribute("user", user);
+        if (connectedUser == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
         }
+
+        String idParam = req.getParameter("id");
+        User profileUser;
+
+        // Aucun id = notre propre profil
+        if (idParam == null) {
+            profileUser = connectedUser;
+        } else {
+            int profileId = Integer.parseInt(idParam);
+            profileUser = userDAO.findById(profileId);
+            if (profileUser == null) {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+        }
+
+        // Vérifie si c'est son propre profil
+        boolean isOwnProfile = (connectedUser.getId() == profileUser.getId());
+
+        req.setAttribute("user", profileUser);
+        req.setAttribute("isOwnProfile", isOwnProfile);
 
         req.getRequestDispatcher("/WEB-INF/profile.jsp").forward(req, resp);
     }

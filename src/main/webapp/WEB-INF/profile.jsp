@@ -10,7 +10,16 @@
 
     <div class="row mb-5">
         <div class="col-12">
-            <h1 class="h3 mb-4">Profil</h1>
+            <h1 class="h3 mb-4">
+                <c:choose>
+                    <c:when test="${isOwnProfile}">
+                        Mon profil
+                    </c:when>
+                    <c:otherwise>
+                        Profil de ${user.username}
+                    </c:otherwise>
+                </c:choose>
+            </h1>
         </div>
 
         <c:choose>
@@ -28,11 +37,24 @@
                 <div class="col-md-4 mb-4">
                     <div class="card shadow-sm h-100">
                         <div class="card-body p-4">
-                            <h5 class="card-title">${user.username}</h5><br>
-                            <p class="text-muted small">${user.email}</p>
+                            <h5 class="card-title">${user.username}</h5>
+                            <br>
+
+                            <c:if test="${isOwnProfile}">
+                                <p class="text-muted small">${user.email}</p>
+                            </c:if>
+
                             <p class="text-muted small">Compte créé le : ${user.createdAt}</p>
-                            <p class="text-muted small"><a href="${pageContext.request.contextPath}/friends">Liste d'amis</a></p>
-                            <p class="text-muted small"><a href="${pageContext.request.contextPath}/composition/list">Compositions</a></p>
+
+                            <c:if test="${isOwnProfile}">
+                                <p class="text-muted small">
+                                    <a href="${pageContext.request.contextPath}/friends">Liste d'amis</a>
+                                </p>
+                            </c:if>
+
+                            <p class="text-muted small">
+                                <a href="${pageContext.request.contextPath}/composition/list?userId=${user.id}">Compositions</a>
+                            </p>
                         </div>
                     </div>
                 </div>
