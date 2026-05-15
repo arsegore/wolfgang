@@ -18,7 +18,7 @@ public class CompositionDAO {
      * @param composition
      * @return vrai si l'insertion a réussi, faux sinon
      */
-    public boolean create(Composition composition) {
+    public static int create(Composition composition) {
         String sql = """
 					INSERT INTO compositions (title, tempo, access_type, owner_id)
 					VALUES (?, ?, ?, ?);
@@ -28,18 +28,29 @@ public class CompositionDAO {
                 Connection con = DriverManager.getConnection(
                         DatabaseConfig.DB_URL,
                         DatabaseConfig.DB_LOGIN,
-                        DatabaseConfig.DB_PASSWD);
-                PreparedStatement stmt = con.prepareStatement(sql);
+                        DatabaseConfig.DB_PASSWD
+                );
+
+                PreparedStatement stmt = con.prepareStatement(
+                        sql,
+                        Statement.RETURN_GENERATED_KEYS
+                )
         ) {
             stmt.setString(1, composition.getTitle());
             stmt.setInt(2, composition.getTempo());
             stmt.setString(3, composition.getAccessType());
             stmt.setInt(4, composition.getOwner().getId());
 
-            return stmt.executeUpdate() > 0;
+            stmt.executeUpdate();
+
+            // Récupération de l'id généré
+            ResultSet rs = stmt.getGeneratedKeys();
+            if(rs.next()) return rs.getInt(1);
+            else return -1;
+
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
+            return -1;
         }
     }
 
@@ -337,55 +348,6 @@ public class CompositionDAO {
         }
 
         return members;
-    }
-
-    /**
-     * @return la liste de toutes les compositions
-     */
-    public List<Composition> findAll() {
-        List<Composition> compositions = new ArrayList<>();
-        String sql = """
-                    SELECT c.*, u.id as u_id, u.username, u.email, u.password,
-                           u.created_at as u_created_at, u.updated_at as u_updated_at
-                    FROM compositions c
-                    JOIN users u ON c.owner_id = u.id
-                    ORDER BY c.id;
-                    """;
-
-        try (
-                Connection con = DriverManager.getConnection(
-                        DatabaseConfig.DB_URL,
-                        DatabaseConfig.DB_LOGIN,
-                        DatabaseConfig.DB_PASSWD);
-                PreparedStatement stmt = con.prepareStatement(sql);
-        ) {
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                User owner = new User(
-                        rs.getInt("u_id"),
-                        rs.getString("username"),
-                        rs.getString("email"),
-                        rs.getString("password"),
-                        rs.getObject("u_created_at", LocalDateTime.class),
-                        rs.getObject("u_updated_at", LocalDateTime.class)
-                );
-                compositions.add(new Composition(
-                        rs.getInt("id"),
-                        rs.getString("title"),
-                        rs.getString("description"),
-                        rs.getInt("tempo"),
-                        rs.getString("access_type"),
-                        owner,
-                        rs.getObject("created_at", LocalDateTime.class),
-                        rs.getObject("updated_at", LocalDateTime.class)
-                ));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return compositions;
     }
 
     /**
