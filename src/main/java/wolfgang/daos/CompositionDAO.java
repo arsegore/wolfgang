@@ -115,7 +115,7 @@ public class CompositionDAO {
      * @param id
      * @return La composition correspondante ou null
      */
-    public static Composition findById(int id) {
+    public Composition findById(int id) {
         Composition composition = null;
         String sql = """
 					SELECT c.*, u.id as u_id, u.username, u.email, u.password,
@@ -353,7 +353,7 @@ public class CompositionDAO {
     /**
      * @return L'ensemble des compositions publiques
      */
-    public List<Composition> findPublic() {
+    public  List<Composition> findPublic() {
         List<Composition> compositions = new ArrayList<>();
         String sql = """
 					SELECT c.*, u.id as u_id, u.username, u.email, u.password,
