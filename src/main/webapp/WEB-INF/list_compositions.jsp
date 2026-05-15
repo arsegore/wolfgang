@@ -36,9 +36,8 @@
             <c:otherwise>
                 <c:forEach var="comp" items="${myCompositions}">
                     <div class="col-md-4 mb-4">
-                        <%-- Le cadre (card) est BIEN à l'intérieur du forEach --%>
                         <div class="card shadow-sm h-100">
-                            <div class="card-body p-4"> <%-- Classe p-4 inspirée de create_composition.jsp [cite: 2] --%>
+                            <div class="card-body p-4">
                                 <h5 class="card-title">${comp.title}</h5>
                                 <p class="text-muted small">Tempo : ${comp.tempo} BPM</p>
                                 <p class="card-text text-truncate">${comp.description}</p>
