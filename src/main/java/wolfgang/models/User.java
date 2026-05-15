@@ -1,6 +1,7 @@
 package wolfgang.models;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 public class User {
     private int id;
@@ -16,6 +17,8 @@ public class User {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    private ArrayList<User> friends = new ArrayList<>();
 
     public User() {}
 
@@ -106,5 +109,17 @@ public class User {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public ArrayList<User> getFriends() {
+        return friends;
+    }
+
+    public void setFriends(ArrayList<User> friends) {
+        this.friends = friends;
+    }
+
+    public void addFriend(User friend) {
+        this.friends.add(friend);
     }
 }
