@@ -11,6 +11,8 @@ public class User {
 
     private String password;
 
+    private boolean isAdmin;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
@@ -28,6 +30,16 @@ public class User {
         this.username = username;
         this.email = email;
         this.password = password;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
+    public User(int id, String username, String email, String password, boolean isAdmin, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.id = id;
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.isAdmin = isAdmin;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -70,6 +82,14 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public boolean isAdmin() {
+        return isAdmin;
+    }
+
+    public void setAdmin(boolean isAdmin) {
+        this.isAdmin = isAdmin;
     }
 
     public LocalDateTime getCreatedAt() {

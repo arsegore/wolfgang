@@ -2,6 +2,7 @@
 
 <jsp:include page="include/header.jsp">
     <jsp:param name="title" value="Nouvelle composition — Wolfgang"/>
+    <jsp:param name="activePage" value="create"/>
 </jsp:include>
 
 <div class="container py-5">

@@ -52,7 +52,6 @@ public class CreateCompositionServlet extends HttpServlet {
             req.getRequestDispatcher("/WEB-INF/create_composition.jsp").forward(req, resp);
             return;
         }
-
         if (accessType == null || accessType.isBlank()) {
             FlashMessageUtils.setFlash(req, "error", "Veuillez choisir un type d'accès.");
             req.getRequestDispatcher("/WEB-INF/create_composition.jsp").forward(req, resp);
@@ -68,13 +67,12 @@ public class CreateCompositionServlet extends HttpServlet {
             return;
         }
 
-        Composition comp = new Composition(nameComp, tempo, accessType, user);
-        int id;
-        if ((id = CompositionDAO.create(comp)) != -1) {
+        int id = CompositionDAO.create(new Composition(nameComp, tempo, accessType, user));
+        if (id != -1) {
             FlashMessageUtils.setFlash(req, "success", "Composition créée avec succès.");
-            resp.sendRedirect(req.getContextPath() + "/composition?id="+id);
+            resp.sendRedirect(req.getContextPath() + "/home");
         } else {
-            FlashMessageUtils.setFlash(req, "error", "Erreur lors de la création");
+            FlashMessageUtils.setFlash(req, "error", "Erreur lors de la création, veuillez réessayer.");
             req.getRequestDispatcher("/WEB-INF/create_composition.jsp").forward(req, resp);
         }
     }
