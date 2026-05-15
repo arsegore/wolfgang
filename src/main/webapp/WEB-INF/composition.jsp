@@ -95,7 +95,7 @@
                     <h5 class="mb-0 text-primary">Pistes</h5>
                     <c:if test="${sessionScope.user.id == composition.owner.id}">
                         <a href="${pageContext.request.contextPath}/jspQuoiMettre?compositionId=${composition.id}" class="btn btn-outline-primary btn-sm">
-                            Ajouter une piste
+                            Ajouter
                         </a>
                     </c:if>
                 </div>
@@ -131,7 +131,24 @@
                             <strong>Propriétaire :</strong> <span class="text-primary">${composition.owner.username}</span>
                         </li>
                         <li class="mb-2">
-                            <strong>Tempo :</strong> <span class="badge bg-info text-dark">${composition.tempo} BPM</span>
+                            <div class="d-flex align-items-center">
+                                <strong>Tempo : </strong>
+                                <c:choose>
+                                    <c:when test="${sessionScope.user.id == composition.owner.id}">
+
+                                        <form method="post" action="${pageContext.request.contextPath}/composition/view?id=${composition.id}" class="d-flex align-items-center gap-2">
+                                            <input type="hidden" name="action" value="updateTempo"/>
+                                            <input type="number" name="tempo" value="${composition.tempo}" min="20" class="form-control form-control-sm" style="width: 120px;"/>
+
+                                            <button type="submit" class="btn btn-success btn-sm">Valider</button>
+                                        </form>
+                                    </c:when>
+
+                                    <c:otherwise>
+                                        <span class="badge bg-info text-dark">${composition.tempo} BPM</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
                         </li>
                         <li class="mb-2">
                             <small class="text-muted d-block">Créé le : ${composition.createdAt}</small>
