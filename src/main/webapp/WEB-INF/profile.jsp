@@ -25,19 +25,17 @@
             </c:when>
 
             <c:otherwise>
-                <c:forEach var="user" items="${user}">
-                    <div class="col-md-4 mb-4">
-                        <div class="card shadow-sm h-100">
-                            <div class="card-body p-4">
-                                <h5 class="card-title">Nom : ${user.username}</h5>
-                                <p class="text-muted small">Adresse mail : ${user.email}</p>
-                                <p class="text-muted small">Compte créé le : ${user.createdAt}</p>
-                                <p class="text-muted small">Liste d'amis : </p>
-                                <p class="text-muted small">Compositions : </p>
-                            </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <h5 class="card-title">${user.username}</h5><br>
+                            <p class="text-muted small">${user.email}</p>
+                            <p class="text-muted small">Compte créé le : ${user.createdAt}</p>
+                            <p class="text-muted small"><a href="${pageContext.request.contextPath}/friends">Liste d'amis</a></p>
+                            <p class="text-muted small"><a href="${pageContext.request.contextPath}/composition/list">Compositions</a></p>
                         </div>
                     </div>
-                </c:forEach>
+                </div>
             </c:otherwise>
         </c:choose>
     </div>
