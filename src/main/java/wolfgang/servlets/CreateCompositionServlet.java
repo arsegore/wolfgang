@@ -18,12 +18,10 @@ import java.io.IOException;
 @WebServlet("/composition/create")
 public class CreateCompositionServlet extends HttpServlet {
     private UserDAO userDAO;
-    private CompositionDAO compositionDAO;
 
     public void init() throws ServletException {
         DatabaseConfig.init(getServletContext());
         userDAO = new UserDAO();
-        compositionDAO = new CompositionDAO();
     }
 
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
@@ -69,7 +67,8 @@ public class CreateCompositionServlet extends HttpServlet {
             return;
         }
 
-        if (compositionDAO.create(new Composition(nameComp, tempo, accessType, user))) {
+        int id = CompositionDAO.create(new Composition(nameComp, tempo, accessType, user));
+        if (id != -1) {
             FlashMessageUtils.setFlash(req, "success", "Composition créée avec succès.");
             resp.sendRedirect(req.getContextPath() + "/home");
         } else {

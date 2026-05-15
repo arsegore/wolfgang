@@ -3,7 +3,6 @@
 
 <jsp:include page="include/header.jsp">
     <jsp:param name="title" value="Tableau de bord — Wolfgang"/>
-    <jsp:param name="activePage" value="compositions"/>
 </jsp:include>
 
 <div class="container py-5">
@@ -19,7 +18,7 @@
                 <div class="col-12">
                     <div class="alert alert-info border shadow-sm">
                         <i class="bi bi-info-circle me-2"></i>
-                        Connectez-vous pour créer et retrouver vos compositions.
+                        Connectez-vous pour créer et retrouver vos compositions personnelles.
                         <a href="${pageContext.request.contextPath}/login" class="alert-link ms-2">Se connecter</a>
                     </div>
                 </div>
