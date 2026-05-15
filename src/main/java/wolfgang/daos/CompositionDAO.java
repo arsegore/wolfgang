@@ -398,4 +398,50 @@ public class CompositionDAO {
 
         return compositions;
     }
+
+    public List<Composition> findAll() {
+        List<Composition> compositions = new ArrayList<>();
+        String sql = """
+                    SELECT c.*, u.id as u_id, u.username, u.email, u.password,
+                           u.created_at as u_created_at, u.updated_at as u_updated_at
+                    FROM compositions c
+                    JOIN users u ON c.owner_id = u.id
+                    ORDER BY c.id;
+                    """;
+
+        try (
+                Connection con = DriverManager.getConnection(
+                        DatabaseConfig.DB_URL,
+                        DatabaseConfig.DB_LOGIN,
+                        DatabaseConfig.DB_PASSWD);
+                PreparedStatement stmt = con.prepareStatement(sql);
+        ) {
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                User owner = new User(
+                        rs.getInt("u_id"),
+                        rs.getString("username"),
+                        rs.getString("email"),
+                        rs.getString("password"),
+                        rs.getObject("u_created_at", LocalDateTime.class),
+                        rs.getObject("u_updated_at", LocalDateTime.class)
+                );
+                compositions.add(new Composition(
+                        rs.getInt("id"),
+                        rs.getString("title"),
+                        rs.getString("description"),
+                        rs.getInt("tempo"),
+                        rs.getString("access_type"),
+                        owner,
+                        rs.getObject("created_at", LocalDateTime.class),
+                        rs.getObject("updated_at", LocalDateTime.class)
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return compositions;
+    }
 }
