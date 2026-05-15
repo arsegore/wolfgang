@@ -72,7 +72,7 @@
                         <p class="small text-primary">Par : ${pub.owner.username}</p>
                     </div>
                     <div class="card-footer bg-transparent border-0 p-3">
-                        <a href="View?id=${pub.id}" class="btn btn-outline-secondary w-100">Consulter</a>
+                        <a href="view?id=${pub.id}" class="btn btn-outline-secondary w-100">Consulter</a>
                     </div>
                 </div>
             </div>

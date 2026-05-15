@@ -8,39 +8,96 @@
 <div class="container py-5">
     <%@ include file="include/flash.jsp"%>
 
+    <%-- Haut de page --%>
     <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
+
+        <%-- Titre --%>
         <div>
             <h1 class="display-5 mb-0">${composition.title}</h1>
             <p class="text-muted">Référence : #${composition.id}</p>
         </div>
-        <div class="text-end">
-            <span class="badge ${composition.accessType == 'public' ? 'bg-success' : 'bg-warning'} fs-6">
-                Accès : ${composition.accessType}
-            </span>
-        </div>
+
+        <%-- Type d acces --%>
+        <c:choose>
+
+            <%-- Propriétaire --%>
+            <c:when test="${sessionScope.user.id == composition.owner.id}">
+                <div class="text-end">
+                    <form method="post" action="${pageContext.request.contextPath}/composition/view?id=${composition.id}" class="d-inline">
+                        <input type="hidden" name="id" value="${composition.id}" />
+                        <input type="hidden" name="action" value="updateAccess"/>
+                        <input type="hidden" name="accessType" value="${composition.accessType == 'public' ? 'private' : 'public'}" />
+                        <button type="submit" class="btn badge ${composition.accessType == 'public' ? 'bg-success' : 'bg-danger'} fs-6 border-0">
+                            Accès : ${composition.accessType}
+                        </button>
+                    </form>
+                </div>
+            </c:when>
+
+            <%-- Autres (collaborateurs ou publique) --%>
+            <c:otherwise>
+                <div class="text-end">
+                    <span class="badge ${composition.accessType == 'public' ? 'bg-success' : 'bg-danger'} fs-6">
+                        Accès : ${composition.accessType}
+                    </span>
+                </div>
+            </c:otherwise>
+        </c:choose>
     </div>
 
+    <%-- Partie Basse --%>
     <div class="row">
         <div class="col-lg-8">
+
+            <%-- Description de la composition --%>
             <div class="card shadow-sm mb-4">
                 <div class="card-body p-4">
-                    <h4 class="card-title mb-3 text-primary">Description</h4>
+
+                    <%-- Bouton d affichage de l éditeur de description --%>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="card-title mb-3 text-primary">Description</h4>
+                        <c:if test="${sessionScope.user.id == composition.owner.id}">
+                            <button class="btn btn-outline-primary btn-sm" type="button" onclick="document.getElementById('editDescription').classList.toggle('d-none')">
+                                Modifier
+                            </button>
+                        </c:if>
+                    </div>
+
+                    <%-- Affichage de la description --%>
                     <p class="card-text lead">
                         <c:choose>
                             <c:when test="${not empty composition.description}">
                                 ${composition.description}
                             </c:when>
                             <c:otherwise>
-                                <span class="text-muted italic">Aucune description fournie.</span>
+                                <p class="text-muted">Aucune description fournie.</p>
                             </c:otherwise>
                         </c:choose>
                     </p>
+
+                    <%-- Editeur de description --%>
+                    <div id="editDescription" class="d-none mt-3">
+                        <form method="post" action="${pageContext.request.contextPath}/composition/view?id=${composition.id}">
+                            <input type="hidden" name="id" value="${composition.id}"/>
+                            <input type="hidden" name="action" value="updateDescription"/>
+                            <textarea class="form-control mb-3" name="description" rows="4">
+                               ${composition.description}
+                            </textarea>
+                            <button type="submit" class="btn btn-primary">Enregistrer</button>
+                        </form>
+                    </div>
                 </div>
             </div>
 
+            <%-- Pistes de la composition --%>
             <div class="card shadow-sm mb-4">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0 text-primary">Pistes de l'œuvre</h5>
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0 text-primary">Pistes</h5>
+                    <c:if test="${sessionScope.user.id == composition.owner.id}">
+                        <a href="${pageContext.request.contextPath}/jspQuoiMettre?compositionId=${composition.id}" class="btn btn-outline-primary btn-sm">
+                            Ajouter une piste
+                        </a>
+                    </c:if>
                 </div>
                 <div class="card-body">
                     <c:choose>
@@ -62,7 +119,10 @@
             </div>
         </div>
 
+        <%-- Partie Droite --%>
         <div class="col-lg-4">
+
+            <%-- Informations --%>
             <div class="card shadow-sm mb-4 border-primary">
                 <div class="card-body">
                     <h5 class="card-title border-bottom pb-2 mb-3">Informations</h5>
@@ -83,9 +143,15 @@
                 </div>
             </div>
 
+            <%-- Collaborateurs --%>
             <div class="card shadow-sm">
-                <div class="card-header bg-light">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Collaborateurs</h5>
+                    <c:if test="${sessionScope.user.id == composition.owner.id}">
+                        <a href="${pageContext.request.contextPath}/jspQuoiMettreNonPlus?compositionId=${composition.id}" class="btn btn-outline-primary btn-sm">
+                            Inviter
+                        </a>
+                    </c:if>
                 </div>
                 <div class="card-body p-0">
                     <ul class="list-group list-group-flush">
@@ -113,6 +179,7 @@
                 </div>
             </div>
 
+            <%-- Bouton Retour --%>
             <div class="mt-4">
                 <a href="${pageContext.request.contextPath}/composition/display" class="btn btn-outline-secondary w-100">
                     <i class="bi bi-arrow-left"></i> Retour à la liste
