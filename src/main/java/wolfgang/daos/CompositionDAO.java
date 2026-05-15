@@ -59,7 +59,7 @@ public class CompositionDAO {
      * @param composition
      * @return vrai si la mise à jour a réussi, faux sinon
      */
-    public static boolean update(Composition composition) {
+    public boolean update(Composition composition) {
         String sql = """
                 UPDATE compositions
                 SET title = ?, description = ?, tempo = ?, access_type = ?, owner_id = ?, updated_at = ?
@@ -93,7 +93,7 @@ public class CompositionDAO {
      * @param id
      * @return vrai si la suppression a réussi, faux sinon
      */
-    public static boolean delete(int id) {
+    public boolean delete(int id) {
         String sql = "DELETE FROM compositions WHERE id = ?;";
 
         try (
@@ -167,7 +167,7 @@ public class CompositionDAO {
      * @param userId
      * @return liste des compositions
      */
-    public static List<Composition> findByUser(int userId) {
+    public List<Composition> findByUser(int userId) {
         List<Composition> compositions = new ArrayList<>();
         String sql = """
 					SELECT c.*, u.id as u_id, u.username, u.email, u.password,
@@ -222,7 +222,7 @@ public class CompositionDAO {
      * @param role
      * @return vrai si l'insertion a réussi, faux sinon
      */
-    public static boolean addMember(int compositionId, int userId, String role) {
+    public boolean addMember(int compositionId, int userId, String role) {
         String sql = """
 					INSERT INTO composition_members (composition_id, user_id, role)
 					VALUES (?, ?, ?);
@@ -253,7 +253,7 @@ public class CompositionDAO {
      * @param role
      * @return vrai si la mise à jour a réussi, faux sinon
      */
-    public static boolean updateRole(int compositionId, int userId, String role) {
+    public boolean updateRole(int compositionId, int userId, String role) {
         String sql = """
 					UPDATE composition_members
 					SET role = ?
@@ -284,7 +284,7 @@ public class CompositionDAO {
      * @param userId
      * @return vrai si la suppression a réussi, faux sinon
      */
-    public static boolean removeMember(int compositionId, int userId) {
+    public boolean removeMember(int compositionId, int userId) {
         String sql = """
 					DELETE FROM composition_members
 					WHERE composition_id = ? AND user_id = ?;
@@ -312,7 +312,7 @@ public class CompositionDAO {
      * @param compositionId
      * @return map user -> role
      */
-    public static Map<User, String> findMembers(int compositionId) {
+    public Map<User, String> findMembers(int compositionId) {
         Map<User, String> members = new HashMap<>();
         String sql = """
 					SELECT cm.role, u.id as u_id, u.username, u.email, u.password,
@@ -353,7 +353,7 @@ public class CompositionDAO {
     /**
      * @return L'ensemble des compositions publiques
      */
-    public static List<Composition> findPublic() {
+    public List<Composition> findPublic() {
         List<Composition> compositions = new ArrayList<>();
         String sql = """
 					SELECT c.*, u.id as u_id, u.username, u.email, u.password,
