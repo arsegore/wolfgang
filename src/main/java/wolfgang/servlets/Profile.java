@@ -1,7 +1,6 @@
 package wolfgang.servlets;
 
 import java.io.IOException;
-import java.util.List;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -10,32 +9,29 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import wolfgang.config.DatabaseConfig;
-import wolfgang.daos.FriendsDAO;
-import wolfgang.models.Friendship;
+import wolfgang.daos.UserDAO;
 import wolfgang.models.User;
 
-@WebServlet("/friends")
-public class FriendsList extends HttpServlet {
-    private FriendsDAO friendsDAO;
+@WebServlet("/profile")
+public class Profile extends HttpServlet {
+    private UserDAO userDAO;
 
     @Override
     public void init() throws ServletException {
         DatabaseConfig.init(getServletContext());
-        friendsDAO = new FriendsDAO();
+        userDAO = new UserDAO();
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession();
-        List<Friendship> myFriends;
         User user = (User) session.getAttribute("user");
 
         if (user != null) {
-            myFriends = friendsDAO.findFriends(user);
-            req.setAttribute("myFriends", myFriends);
+            req.setAttribute("user", user);
         }
 
-        req.getRequestDispatcher("/WEB-INF/friends_list.jsp").forward(req, resp);
+        req.getRequestDispatcher("/WEB-INF/profile.jsp").forward(req, resp);
     }
 
     @Override
