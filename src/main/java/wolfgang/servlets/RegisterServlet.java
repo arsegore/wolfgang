@@ -54,7 +54,7 @@ public class RegisterServlet extends HttpServlet {
             req.getRequestDispatcher("/WEB-INF/register.jsp").forward(req, resp);
             return;
         }
-        if (password == null || password.isBlank()) {
+        if (PasswordUtils.isValidPassword(password) || password.isBlank()) {
             FlashMessageUtils.setFlash(req, "error", "Mot de passe invalide.");
             req.getRequestDispatcher("/WEB-INF/register.jsp").forward(req, resp);
             return;
