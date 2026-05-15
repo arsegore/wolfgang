@@ -16,10 +16,10 @@ public class UserDAO {
      * @param user l'utilisateur à insérer
      * @return vrai si l'insertion a réussi, faux sinon
      */
-    public boolean create(User user) {
+    public boolean create(User user, String token) {
         String sql = """
-                    INSERT INTO users (username, email, password)
-                    VALUES (?, ?, ?);
+                    INSERT INTO users (username, email, password, verification_token)
+                    VALUES (?, ?, ?, ?);
                     """;
 
         try (
@@ -32,6 +32,7 @@ public class UserDAO {
             stmt.setString(1, user.getUsername());
             stmt.setString(2, user.getEmail());
             stmt.setString(3, user.getPassword());
+            stmt.setString(4, token);
 
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -104,7 +105,7 @@ public class UserDAO {
     public User authenticate(String username, String password) {
         User user = null;
         String sql = """
-                SELECT id, username, email, password, is_admin, created_at, updated_at
+                SELECT id, username, email, password, is_admin, is_verified, created_at, updated_at
                 FROM users
                 WHERE username = ?;
                 """;
@@ -127,6 +128,7 @@ public class UserDAO {
                             rs.getString("email"),
                             rs.getString("password"),
                             rs.getBoolean("is_admin"),
+                            rs.getBoolean("is_verified"),
                             rs.getObject("created_at", LocalDateTime.class),
                             rs.getObject("updated_at", LocalDateTime.class)
                     );
@@ -146,7 +148,7 @@ public class UserDAO {
     public User findById(int id) {
         User user = null;
         String sql = """
-                    SELECT id, username, email, password, is_admin, created_at, updated_at
+                    SELECT id, username, email, password, is_admin, is_verified, created_at, updated_at
                     FROM users
                     WHERE id = ?;
                     """;
@@ -168,6 +170,7 @@ public class UserDAO {
                         rs.getString("email"),
                         rs.getString("password"),
                         rs.getBoolean("is_admin"),
+                        rs.getBoolean("is_verified"),
                         rs.getObject("created_at", LocalDateTime.class),
                         rs.getObject("updated_at", LocalDateTime.class)
                 );
@@ -185,7 +188,7 @@ public class UserDAO {
     public List<User> findAll() {
         List<User> users = new ArrayList<>();
         String sql = """
-                    SELECT id, username, email, password, is_admin, created_at, updated_at
+                    SELECT id, username, email, password, is_admin, is_verified, created_at, updated_at
                     FROM users
                     ORDER BY id;
                     """;
@@ -206,6 +209,7 @@ public class UserDAO {
                         rs.getString("email"),
                         rs.getString("password"),
                         rs.getBoolean("is_admin"),
+                        rs.getBoolean("is_verified"),
                         rs.getObject("created_at", LocalDateTime.class),
                         rs.getObject("updated_at", LocalDateTime.class)
                 ));
@@ -216,4 +220,25 @@ public class UserDAO {
 
         return users;
     }
+
+
+    public boolean verifyUser(String token) {
+        String sql = """
+            UPDATE users 
+            SET is_verified = TRUE, verification_token = NULL 
+            WHERE verification_token = ?;
+            """;
+        try (Connection con = DriverManager.getConnection(
+                DatabaseConfig.DB_URL,
+                DatabaseConfig.DB_LOGIN,
+                DatabaseConfig.DB_PASSWD);
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+                stmt.setString(1, token);
+                return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 }
