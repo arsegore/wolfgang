@@ -19,10 +19,12 @@ import java.sql.SQLException;
 
 @WebServlet("/composition")
 public class CompositionServlet extends HttpServlet {
+    private CompositionDAO compositionDAO;
 
     @Override
     public void init() throws ServletException {
         DatabaseConfig.init(getServletContext());
+        compositionDAO = new CompositionDAO();
     }
 
     @Override
@@ -37,7 +39,7 @@ public class CompositionServlet extends HttpServlet {
         }
 
         int id = Integer.parseInt(idParam);
-        Composition comp = CompositionDAO.findById(id);
+        Composition comp = compositionDAO.findById(id);
 
         if (comp == null) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
