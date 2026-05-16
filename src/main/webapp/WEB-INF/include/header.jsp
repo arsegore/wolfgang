@@ -48,6 +48,18 @@
                                 <li><h6 class="dropdown-header">${sessionScope.user.email}</h6></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
+                                    <a class="dropdown-item text" href="${pageContext.request.contextPath}/profile">
+                                        Profil
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text" href="${pageContext.request.contextPath}/friends">
+                                        Liste d'amis
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
                                     <a class="dropdown-item text-danger" href="${pageContext.request.contextPath}/logout">
                                         <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
                                     </a>
