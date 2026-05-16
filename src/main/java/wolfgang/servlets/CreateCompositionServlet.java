@@ -70,7 +70,7 @@ public class CreateCompositionServlet extends HttpServlet {
         int id = CompositionDAO.create(new Composition(nameComp, tempo, accessType, user));
         if (id != -1) {
             FlashMessageUtils.setFlash(req, "success", "Composition créée avec succès.");
-            resp.sendRedirect(req.getContextPath() + "/home");
+            resp.sendRedirect(req.getContextPath() + "/composition/view?id="+id);
         } else {
             FlashMessageUtils.setFlash(req, "error", "Erreur lors de la création, veuillez réessayer.");
             req.getRequestDispatcher("/WEB-INF/create_composition.jsp").forward(req, resp);
