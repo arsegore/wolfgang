@@ -21,6 +21,9 @@ var canvas, ctx;
 var scrollXInput, scrollYInput;
 var tabsContainer, cursorInfo;
 
+// Instance globale de la WebSocket MIDI
+var midiSocket;
+
 // démarrage
 function initEditor(tracksData, bpb) {
     tracks      = tracksData || [];
@@ -39,11 +42,77 @@ function initEditor(tracksData, bpb) {
     var c4Row = PITCH_MAX - 60;
     scrollY = Math.max(0, c4Row * CELL_H - Math.floor((canvas.height - HEADER_H) / 2));
 
+    // --- INITIALISATION DE LA WEBSOCKET FULL DUPLEX ---
+    initMidiWebSocket();
+
     buildTrackTabs();
     updateScrollbarLimits();
     syncScrollbars();
     setupEvents();
     render();
+}
+
+// Initialisation de la connexion temps réel
+function initMidiWebSocket() {
+    // On cible le Endpoint configuré côté Java (en minuscules pour pallier la casse)
+    midiSocket = new WebSocket("ws://" + window.location.host + COMPOSITION_DATA.contextPath + '/editeur/' + COMPOSITION_DATA.id);
+
+    midiSocket.onopen = function() {
+        console.log("Éditeur connecté en temps réel sur la partition #" + COMPOSITION_DATA.id);
+    };
+
+    midiSocket.onmessage = function(event) {
+        var response = JSON.parse(event.data);
+        if (!response.success) return;
+
+        // Traitement des notifications de broadcast du serveur
+        if (response.action === 'NOTE_ADDED') {
+            // On cherche la piste concernée
+            var targetTrack = tracks.find(function(t) { return t.id === response.trackId; });
+            if (targetTrack) {
+                // On évite les doublons graphiques
+                var exists = targetTrack.notes.some(function(n) { return n.id === response.id; });
+                if (!exists) {
+                    targetTrack.notes.push({
+                        id: response.id,
+                        pitch: response.pitch,
+                        startBeat: response.startBeat,
+                        duration: response.duration,
+                        velocity: response.velocity
+                    });
+                    if (response.startBeat + 1 > totalBeats) {
+                        totalBeats = response.startBeat + 1 + beatsPerBar;
+                        updateScrollbarLimits();
+                    }
+                    render();
+                }
+            }
+        }
+        else if (response.action === 'NOTE_DELETED') {
+            // On cherche la note dans toutes les pistes pour la supprimer
+            tracks.forEach(function(track) {
+                var index = track.notes.findIndex(function(n) { return n.id === response.noteId; });
+                if (index >= 0) {
+                    track.notes.splice(index, 1);
+                    render();
+                }
+            });
+        }
+        else if (response.action === 'TRACK_CREATED') {
+            // Une nouvelle piste a été ajoutée par nous ou un collaborateur
+            tracks.push(response.track);
+            buildTrackTabs();
+            render();
+        }
+    };
+
+    midiSocket.onerror = function(error) {
+        console.error("Erreur WebSocket Éditeur : ", error);
+    };
+
+    midiSocket.onclose = function() {
+        console.log("Connexion de l'éditeur perdue.");
+    };
 }
 
 // gestion du canvas
@@ -54,7 +123,6 @@ function resizeCanvas() {
 // onglet piste
 function buildTrackTabs() {
     var i, btn, addBtn;
-
     tabsContainer.innerHTML = '';
 
     for (i = 0; i < tracks.length; i++) {
@@ -163,7 +231,7 @@ function getCanvasPos(e) {
 }
 
 function onMouseDown(e) {
-    var pos, beat, pitch, track, existing, note;
+    var pos, beat, pitch, track, existing;
 
     pos = getCanvasPos(e);
     if (pos.x < KEY_W || pos.y < HEADER_H) return;
@@ -177,22 +245,29 @@ function onMouseDown(e) {
     track    = tracks[activeTrackIndex];
     existing = findNoteAt(track, beat, pitch);
 
+    // Changement d'approche ici : plus de manipulation locale directe du tableau, on délègue à la WebSocket
     if (existing >= 0) {
-        note = track.notes[existing];
-        track.notes.splice(existing, 1);
+        var note = track.notes[existing];
         if (note.id > 0) {
-            deleteNote(note.id);
+            // Émission de la suppression via WS
+            midiSocket.send(JSON.stringify({
+                action: 'DELETE_NOTE',
+                data: { noteId: note.id }
+            }));
         }
     } else if (currentTool === 'draw') {
-        note = { id: 0, pitch: pitch, startBeat: beat, duration: 1, velocity: 100 };
-        track.notes.push(note);
-        if (beat + 1 > totalBeats) {
-            totalBeats = beat + 1 + beatsPerBar;
-            updateScrollbarLimits();
-        }
-        saveNote(track.id, note);
+        // Émission de l'ajout via WS
+        midiSocket.send(JSON.stringify({
+            action: 'ADD_NOTE',
+            data: {
+                trackId: track.id,
+                pitch: pitch,
+                startBeat: beat,
+                duration: 1,
+                velocity: 100
+            }
+        }));
     }
-    render();
 }
 
 function onMouseMove(e) {
@@ -421,31 +496,7 @@ function drawNotes() {
     }
 }
 
-// persistance
-function saveNote(trackId, note) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', COMPOSITION_DATA.contextPath + '/note');
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xhr.onload = function() {
-        if (xhr.status === 200) {
-            var data = JSON.parse(xhr.responseText);
-            if (data.success) {
-                note.id = data.id;
-            }
-        }
-    };
-    xhr.send('action=add&trackId=' + trackId + '&pitch=' + note.pitch +
-             '&startBeat=' + note.startBeat + '&duration=' + note.duration +
-             '&velocity=' + note.velocity);
-}
-
-function deleteNote(noteId) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', COMPOSITION_DATA.contextPath + '/note');
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xhr.send('action=delete&noteId=' + noteId);
-}
-
+// Boîte de dialogue pour ajouter une piste
 function onAddTrackClick() {
     var instruments, sel, i, opt;
 
@@ -463,11 +514,12 @@ function onAddTrackClick() {
     new bootstrap.Modal(document.getElementById('modal-new-track')).show();
 }
 
+// Soumission de la création d'une piste
 function onCreateTrack() {
-    var name, instrumentId, color, xhr, params;
+    var name, instrumentId, color;
 
     name         = document.getElementById('new-track-name').value.trim();
-    instrumentId = document.getElementById('new-track-instrument').value;
+    instrumentId = parseInt(document.getElementById('new-track-instrument').value);
     color        = document.getElementById('new-track-color').value;
 
     if (!name) {
@@ -475,27 +527,17 @@ function onCreateTrack() {
         return;
     }
 
-    xhr = new XMLHttpRequest();
-    xhr.open('POST', COMPOSITION_DATA.contextPath + '/track');
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xhr.onload = function() {
-        if (xhr.status === 200) {
-            var data = JSON.parse(xhr.responseText);
-            if (data.success) {
-                tracks.push(data.track);
-                activeTrackIndex = tracks.length - 1;
-                buildTrackTabs();
-                render();
-                bootstrap.Modal.getInstance(document.getElementById('modal-new-track')).hide();
-            }
+    // Émission de la création de la piste via WS
+    midiSocket.send(JSON.stringify({
+        action: 'CREATE_TRACK',
+        data: {
+            name: name,
+            instrumentId: instrumentId,
+            color: color
         }
-    };
-    params = 'action=create' +
-             '&compositionId=' + COMPOSITION_DATA.id +
-             '&name=' + encodeURIComponent(name) +
-             '&instrumentId=' + instrumentId +
-             '&color=' + encodeURIComponent(color);
-    xhr.send(params);
+    }));
+
+    bootstrap.Modal.getInstance(document.getElementById('modal-new-track')).hide();
 }
 
 // helpers
@@ -510,7 +552,8 @@ function lightenColor(hex, amount) {
     return '#' + pad2(r.toString(16)) + pad2(g.toString(16)) + pad2(b.toString(16));
 }
 
+// (Les anciennes fonctions saveNote et deleteNote basées sur XHR ont été nettoyées)
+
 function pad2(s) {
     return s.length === 1 ? '0' + s : s;
 }
- 
