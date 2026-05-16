@@ -10,9 +10,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import wolfgang.config.DatabaseConfig;
 import wolfgang.daos.CompositionDAO;
+import wolfgang.daos.InstrumentDAO;
 import wolfgang.daos.NoteDAO;
 import wolfgang.daos.TrackDAO;
 import wolfgang.models.Composition;
+import wolfgang.models.Instrument;
 import wolfgang.models.Note;
 import wolfgang.models.Track;
 import wolfgang.models.User;
@@ -25,6 +27,7 @@ public class CompositionServlet extends HttpServlet {
     private CompositionDAO compositionDAO;
     private TrackDAO trackDAO;
     private NoteDAO noteDAO;
+    private InstrumentDAO instrumentDAO;
 
     @Override
     public void init() throws ServletException {
@@ -32,6 +35,7 @@ public class CompositionServlet extends HttpServlet {
         compositionDAO = new CompositionDAO();
         trackDAO = new TrackDAO();
         noteDAO = new NoteDAO();
+        instrumentDAO = new InstrumentDAO();
     }
 
     @Override
@@ -68,6 +72,7 @@ public class CompositionServlet extends HttpServlet {
 
         req.setAttribute("composition", comp);
         req.setAttribute("tracksJson", buildTracksJson(tracks));
+        req.setAttribute("instrumentsJson", buildInstrumentsJson(instrumentDAO.findAll()));
         req.getRequestDispatcher("/WEB-INF/composition.jsp").forward(req, resp);
     }
 
@@ -101,5 +106,16 @@ public class CompositionServlet extends HttpServlet {
         }
 
         return tracksArray.toString();
+    }
+
+    private String buildInstrumentsJson(List<Instrument> instruments) {
+        JsonArray arr = new JsonArray();
+        for (Instrument i : instruments) {
+            JsonObject obj = new JsonObject();
+            obj.addProperty("id", i.getId());
+            obj.addProperty("name", i.getName());
+            arr.add(obj);
+        }
+        return arr.toString();
     }
 }

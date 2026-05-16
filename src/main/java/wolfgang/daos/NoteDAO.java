@@ -12,9 +12,9 @@ public class NoteDAO {
     /**
      * Insère une nouvelle note dans la bdd
      * @param note
-     * @return vrai si l'insertion a réussi, faux sinon
+     * @return l'id de la note insérée
      */
-    public boolean create(Note note) {
+    public int create(Note note) {
         String sql = """
 					INSERT INTO notes (track_id, pitch, start_beat, duration, velocity)
 					VALUES (?, ?, ?, ?, ?);
@@ -25,7 +25,7 @@ public class NoteDAO {
                         DatabaseConfig.DB_URL,
                         DatabaseConfig.DB_LOGIN,
                         DatabaseConfig.DB_PASSWD);
-                PreparedStatement stmt = con.prepareStatement(sql);
+                PreparedStatement stmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         ) {
             stmt.setInt(1, note.getTrack().getId());
             stmt.setInt(2, note.getPitch());
@@ -33,10 +33,12 @@ public class NoteDAO {
             stmt.setFloat(4, note.getDuration());
             stmt.setInt(5, note.getVelocity());
 
-            return stmt.executeUpdate() > 0;
+            stmt.executeUpdate();
+            ResultSet rs = stmt.getGeneratedKeys();
+            return rs.next() ? rs.getInt(1) : -1;
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
+            return -1;
         }
     }
 

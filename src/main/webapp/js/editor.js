@@ -70,7 +70,7 @@ function buildTrackTabs() {
     addBtn = document.createElement('button');
     addBtn.className = 'track-tab track-tab-add';
     addBtn.textContent = '+ Piste';
-    addBtn.title = 'Ajouter une piste (prochainement)';
+    addBtn.addEventListener('click', onAddTrackClick);
     tabsContainer.appendChild(addBtn);
 }
 
@@ -108,6 +108,7 @@ function setupEvents() {
 
     document.getElementById('tool-draw').addEventListener('click', onToolDraw);
     document.getElementById('tool-erase').addEventListener('click', onToolErase);
+    document.getElementById('btn-create-track').addEventListener('click', onCreateTrack);
 }
 
 function onContextMenu(e) {
@@ -162,7 +163,7 @@ function getCanvasPos(e) {
 }
 
 function onMouseDown(e) {
-    var pos, beat, pitch, track, existing;
+    var pos, beat, pitch, track, existing, note;
 
     pos = getCanvasPos(e);
     if (pos.x < KEY_W || pos.y < HEADER_H) return;
@@ -177,13 +178,19 @@ function onMouseDown(e) {
     existing = findNoteAt(track, beat, pitch);
 
     if (existing >= 0) {
+        note = track.notes[existing];
         track.notes.splice(existing, 1);
+        if (note.id > 0) {
+            deleteNote(note.id);
+        }
     } else if (currentTool === 'draw') {
-        track.notes.push({ id: 0, pitch: pitch, startBeat: beat, duration: 1, velocity: 100 });
+        note = { id: 0, pitch: pitch, startBeat: beat, duration: 1, velocity: 100 };
+        track.notes.push(note);
         if (beat + 1 > totalBeats) {
             totalBeats = beat + 1 + beatsPerBar;
             updateScrollbarLimits();
         }
+        saveNote(track.id, note);
     }
     render();
 }
@@ -412,6 +419,83 @@ function drawNotes() {
         ctx.fillStyle = light;
         ctx.fillRect(nx + 1, ny + 1, nw, 2);
     }
+}
+
+// persistance
+function saveNote(trackId, note) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', COMPOSITION_DATA.contextPath + '/note');
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            var data = JSON.parse(xhr.responseText);
+            if (data.success) {
+                note.id = data.id;
+            }
+        }
+    };
+    xhr.send('action=add&trackId=' + trackId + '&pitch=' + note.pitch +
+             '&startBeat=' + note.startBeat + '&duration=' + note.duration +
+             '&velocity=' + note.velocity);
+}
+
+function deleteNote(noteId) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', COMPOSITION_DATA.contextPath + '/note');
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.send('action=delete&noteId=' + noteId);
+}
+
+function onAddTrackClick() {
+    var instruments, sel, i, opt;
+
+    instruments = COMPOSITION_DATA.instruments;
+    sel = document.getElementById('new-track-instrument');
+    sel.innerHTML = '';
+    for (i = 0; i < instruments.length; i++) {
+        opt = document.createElement('option');
+        opt.value = instruments[i].id;
+        opt.textContent = instruments[i].name;
+        sel.appendChild(opt);
+    }
+    document.getElementById('new-track-name').value = '';
+
+    new bootstrap.Modal(document.getElementById('modal-new-track')).show();
+}
+
+function onCreateTrack() {
+    var name, instrumentId, color, xhr, params;
+
+    name         = document.getElementById('new-track-name').value.trim();
+    instrumentId = document.getElementById('new-track-instrument').value;
+    color        = document.getElementById('new-track-color').value;
+
+    if (!name) {
+        document.getElementById('new-track-name').focus();
+        return;
+    }
+
+    xhr = new XMLHttpRequest();
+    xhr.open('POST', COMPOSITION_DATA.contextPath + '/track');
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            var data = JSON.parse(xhr.responseText);
+            if (data.success) {
+                tracks.push(data.track);
+                activeTrackIndex = tracks.length - 1;
+                buildTrackTabs();
+                render();
+                bootstrap.Modal.getInstance(document.getElementById('modal-new-track')).hide();
+            }
+        }
+    };
+    params = 'action=create' +
+             '&compositionId=' + COMPOSITION_DATA.id +
+             '&name=' + encodeURIComponent(name) +
+             '&instrumentId=' + instrumentId +
+             '&color=' + encodeURIComponent(color);
+    xhr.send(params);
 }
 
 // helpers
