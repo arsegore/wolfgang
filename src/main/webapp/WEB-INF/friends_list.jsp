@@ -24,25 +24,79 @@
                     </div>
                 </div>
             </c:when>
-            <c:when test="${empty myFriends}">
-                <div class="col-12">
-                    <div class="alert alert-light border shadow-sm">
-                        Vous n'avez pas encore d'amis.
-                    </div>
-                </div>
-            </c:when>
-
             <c:otherwise>
-                <c:forEach var="friendship" items="${myFriends}">
-                    <div class="col-md-4 mb-4">
-                        <div class="card shadow-sm h-100">
-                            <div class="card-body p-4">
-                                <h5 class="card-title">Nom : ${friendship.friend.username}</h5>
-                                <p class="text-muted small">Amis depuis : ${friendship.friendsSince}</p>
+                <div class="col-12">
+                    <h2 class="h4 mb-4">Demandes envoyées</h2>
+                </div>
+                <c:choose>
+                    <c:when test="${empty mySentRequests}">
+                        <div class="col-12">
+                            <div class="alert alert-light border shadow-sm">
+                                Vous n'avez envoyé aucune demande d'ami.
                             </div>
                         </div>
-                    </div>
-                </c:forEach>
+                    </c:when>
+                    <c:otherwise>
+                        <c:forEach var="request" items="${mySentRequests}">
+                            <div class="col-md-4 mb-4">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-body p-4">
+                                        <h5 class="card-title">Nom : ${request.friend.username}</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </c:forEach>
+                    </c:otherwise>
+                </c:choose>
+
+                <div class="col-12">
+                    <h2 class="h4 mb-4">Demandes reçues</h2>
+                </div>
+                <c:choose>
+                    <c:when test="${empty myReceivedRequests}">
+                        <div class="col-12">
+                            <div class="alert alert-light border shadow-sm">
+                                Vous n'avez reçu aucune demande d'ami.
+                            </div>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <c:forEach var="request" items="${myReceivedRequests}">
+                            <div class="col-md-4 mb-4">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-body p-4">
+                                        <h5 class="card-title">Nom : ${request.user.username}</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </c:forEach>
+                    </c:otherwise>
+                </c:choose>
+
+                <div class="col-12">
+                    <h2 class="h4 mb-4">Liste d'amis</h2>
+                </div>
+                <c:choose>
+                    <c:when test="${empty myFriends}">
+                        <div class="col-12">
+                            <div class="alert alert-light border shadow-sm">
+                                Vous n'avez pas encore d'amis.
+                            </div>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <c:forEach var="friendship" items="${myFriends}">
+                            <div class="col-md-4 mb-4">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-body p-4">
+                                        <h5 class="card-title">Nom : ${friendship.friend.username}</h5>
+                                        <p class="text-muted small">Amis depuis : ${friendship.friendsSince}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </c:forEach>
+                    </c:otherwise>
+                </c:choose>
             </c:otherwise>
         </c:choose>
     </div>
