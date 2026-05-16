@@ -27,12 +27,18 @@ public class FriendsList extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession();
-        List<Friendship> myFriends;
+        List<Friendship> myFriends; // liste d'amis
+        List<Friendship> mySentRequests; // demandes envoyées
+        List<Friendship> myReceivedRequests; // demandes reçues
         User user = (User) session.getAttribute("user");
 
         if (user != null) {
             myFriends = friendsDAO.findFriends(user);
+            mySentRequests = friendsDAO.findSentRequests(user);
+            myReceivedRequests = friendsDAO.findReceivedRequests(user);
             req.setAttribute("myFriends", myFriends);
+            req.setAttribute("mySentRequests", mySentRequests);
+            req.setAttribute("myReceivedRequests", myReceivedRequests);
         }
 
         req.getRequestDispatcher("/WEB-INF/friends_list.jsp").forward(req, resp);
