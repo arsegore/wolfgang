@@ -241,4 +241,47 @@ public class UserDAO {
         }
     }
 
+    public boolean verifyExistingEmail(String email){
+        String sql = """
+                SELECT id
+                FROM users
+                WHERE email = ?
+                LIMIT 1;
+                """;
+        try (Connection con = DriverManager.getConnection(
+                DatabaseConfig.DB_URL,
+                DatabaseConfig.DB_LOGIN,
+                DatabaseConfig.DB_PASSWD);
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setString(1, email);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next();
+
+        }catch (SQLException e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean verifyExistingUsername(String username){
+        String sql = """
+                SELECT id
+                FROM users
+                WHERE username = ?
+                LIMIT 1;
+                """;
+        try (Connection con = DriverManager.getConnection(
+                DatabaseConfig.DB_URL,
+                DatabaseConfig.DB_LOGIN,
+                DatabaseConfig.DB_PASSWD);
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next();
+
+        }catch (SQLException e){
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

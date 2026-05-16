@@ -8,7 +8,7 @@ public class MailUtils {
 
     public static void sendVerificationEmail(String recipientEmail, String token) {
         Properties props = new Properties();
-        props.put("mail.smtp.auth", "false"); // false pour les test
+        props.put("mail.smtp.auth", "false"); // false puisqu'on utilise un faux server local
         props.put("mail.smtp.starttls.enable", "false");
         props.put("mail.smtp.host", "172.22.176.1");
         props.put("mail.smtp.port", "1025");
