@@ -10,9 +10,11 @@ import wolfgang.config.DatabaseConfig;
 import wolfgang.models.User;
 import wolfgang.daos.UserDAO;
 import wolfgang.utils.FlashMessageUtils;
+import wolfgang.utils.MailUtils;
 import wolfgang.utils.PasswordUtils;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @WebServlet("/register")
 public class RegisterServlet extends HttpServlet {
@@ -49,8 +51,18 @@ public class RegisterServlet extends HttpServlet {
             req.getRequestDispatcher("/WEB-INF/register.jsp").forward(req, resp);
             return;
         }
+        if(userDAO.verifyExistingUsername(username)){
+            FlashMessageUtils.setFlash(req, "error", "Nom d'utilisateur déjà pris.");
+            req.getRequestDispatcher("/WEB-INF/register.jsp").forward(req, resp);
+            return;
+        }
         if (email == null || email.isBlank()) {
             FlashMessageUtils.setFlash(req, "error", "Email invalide.");
+            req.getRequestDispatcher("/WEB-INF/register.jsp").forward(req, resp);
+            return;
+        }
+        if(userDAO.verifyExistingEmail(email)){
+            FlashMessageUtils.setFlash(req, "error", "Vous ne pouvez avoir qu'un seul compte avec la même adresse mail.");
             req.getRequestDispatcher("/WEB-INF/register.jsp").forward(req, resp);
             return;
         }
@@ -60,12 +72,16 @@ public class RegisterServlet extends HttpServlet {
             return;
         }
 
-        if (userDAO.create(new User(
-                username,
-                email,
-                PasswordUtils.hashPassword(password)
-        ))) {
-            FlashMessageUtils.setFlash(req, "success", "Inscription réussie.");
+        String token = UUID.randomUUID().toString();
+
+        User newUser = new User(username,
+                                email,
+                                PasswordUtils.hashPassword(password)
+        );
+
+        if (userDAO.create(newUser, token)) {
+            MailUtils.sendVerificationEmail(newUser.getEmail(), token);
+            FlashMessageUtils.setFlash(req, "success", "Inscription réussie. mail envoyé");
             resp.sendRedirect(req.getContextPath() + "/login");
         } else {
             req.setAttribute("error", "Erreur d'inscription, veuillez réessayer.");
