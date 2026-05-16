@@ -87,6 +87,22 @@
                 </div>
             </div>
         </div>
+        </div>
+        <div id="chat-config"
+            data-pseudo="${sessionScope.user.username}"
+            data-context="${pageContext.request.contextPath}"
+            class="d-none">
+        </div>
+
+        <div id="chat-container" class="card shadow-sm p-3">
+            <h6 class="card-title text-primary mb-2"><i class="bi bi-chat-dots-fill me-1"></i> Discussion de groupe</h6>
+            <div id="messages" style="height: 180px; overflow-y: scroll; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; background: #fafafa; font-size: 0.9rem; border-radius: 4px;">
+            </div>
+            <div class="input-group input-group-sm">
+                <input type="text" id="messageInput" class="form-control" placeholder="Votre message...">
+                <button class="btn btn-primary" onclick="send()">Envoyer</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -129,6 +145,7 @@
     };
 </script>
 <script src="${pageContext.request.contextPath}/js/editor.js"></script>
+<script src="${pageContext.request.contextPath}/js/Client.js"></script>
 <script>
     window.addEventListener('load', function () {
         initEditor(COMPOSITION_DATA.tracks, 4);
