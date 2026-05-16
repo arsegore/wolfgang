@@ -17,6 +17,9 @@
                     </c:when>
                     <c:otherwise>
                         Profil de ${user.username}
+                        <a class="btn btn-outline-dark btn-sm mt-2" href="${pageContext.request.contextPath}/friends/add?id=${user.id}">
+                            <i class="bi bi-person-plus me-1"></i>Ajouter en ami
+                        </a>
                     </c:otherwise>
                 </c:choose>
             </h1>
