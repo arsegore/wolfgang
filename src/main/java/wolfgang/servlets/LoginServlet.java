@@ -54,9 +54,15 @@ public class LoginServlet extends HttpServlet {
         }
 
         User user = userDAO.authenticate(username, password);
+
         if (user != null) {
-            session.setAttribute("user", user);
-            resp.sendRedirect(req.getContextPath() + "/home");
+            if(!user.isVerified){
+                FlashMessageUtils.setFlash(req, "error", "Veuillez confirmez votre compte.");
+                resp.sendRedirect(req.getContextPath() + "/login");
+            }else {
+                session.setAttribute("user", user);
+                resp.sendRedirect(req.getContextPath() + "/home");
+            }
         } else {
             FlashMessageUtils.setFlash(req, "error", "Nom d'utilisateur ou mot de passe invalide.");
             resp.sendRedirect(req.getContextPath() + "/login");
