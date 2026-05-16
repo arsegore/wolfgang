@@ -2,7 +2,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
 <jsp:include page="include/header.jsp">
-    <jsp:param name="title" value="Profil — Wolfgang"/>
+    <jsp:param name="title" value="${user.username} — Wolfgang"/>
 </jsp:include>
 
 <div class="container py-5">
@@ -50,11 +50,11 @@
                                 <p class="text-muted small">
                                     <a href="${pageContext.request.contextPath}/friends">Liste d'amis</a>
                                 </p>
-                            </c:if>
 
-                            <p class="text-muted small">
-                                <a href="${pageContext.request.contextPath}/composition/list?userId=${user.id}">Compositions</a>
-                            </p>
+                                <p class="text-muted small">
+                                    <a href="${pageContext.request.contextPath}/composition/list">Mes compositions</a>
+                                </p>
+                            </c:if>
                         </div>
                     </div>
                 </div>
