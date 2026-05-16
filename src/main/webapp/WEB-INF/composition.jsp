@@ -90,11 +90,42 @@
     </div>
 </div>
 
+<div class="modal fade" id="modal-new-track" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h6 class="modal-title">Nouvelle piste</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-2">
+                    <label class="form-label small mb-1">Nom</label>
+                    <input type="text" id="new-track-name" class="form-control form-control-sm" placeholder="Piano, Basse…">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small mb-1">Instrument</label>
+                    <select id="new-track-instrument" class="form-select form-select-sm"></select>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small mb-1">Couleur</label>
+                    <input type="color" id="new-track-color" class="form-control form-control-sm form-control-color w-100" value="#4a9eff">
+                </div>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" id="btn-create-track" class="btn btn-sm btn-primary">Créer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     var COMPOSITION_DATA = {
         id: ${composition.id},
         tempo: ${composition.tempo},
-        tracks: ${tracksJson}
+        tracks: ${tracksJson},
+        instruments: ${instrumentsJson},
+        contextPath: '${pageContext.request.contextPath}'
     };
 </script>
 <script src="${pageContext.request.contextPath}/js/editor.js"></script>
