@@ -14,6 +14,8 @@ public class User {
 
     private boolean isAdmin;
 
+    public boolean isVerified;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
@@ -37,12 +39,13 @@ public class User {
         this.updatedAt = updatedAt;
     }
 
-    public User(int id, String username, String email, String password, boolean isAdmin, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public User(int id, String username, String email, String password, boolean isAdmin, boolean isVerified, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.password = password;
         this.isAdmin = isAdmin;
+        this.isVerified = isVerified;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }

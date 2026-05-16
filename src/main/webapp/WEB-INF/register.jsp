@@ -22,7 +22,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="password" class="form-label">Mot de passe</label>
-                            <input type="password" class="form-control" id="password" name="password" placeholder="Mot de passe" required>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Mot de passe" required pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{3,}$" title="3 caractères minimum, une majuscule, un chiffre et un caractère spécial." >
                         </div>
                         <%-- double check du mdp à ajouter --%>
                         <button type="submit" class="btn btn-primary w-100">S'inscrire</button>
