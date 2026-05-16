@@ -42,6 +42,13 @@
                                 <div class="card shadow-sm h-100">
                                     <div class="card-body p-4">
                                         <h5 class="card-title">Nom : ${request.friend.username}</h5>
+                                        <p class="text-muted small">Envoyée le : ${request.friendsSince}</p>
+                                        <a class="btn btn-outline-dark btn-sm mt-2" href="${pageContext.request.contextPath}/profile?id=${request.friend.id}">
+                                            <i class="bi bi-person me-1"></i>Profil
+                                        </a>
+                                        <a class="btn btn-outline-danger btn-sm mt-2">
+                                            <i class="bi bi-person-dash me-1"></i>Annuler
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -65,7 +72,17 @@
                             <div class="col-md-4 mb-4">
                                 <div class="card shadow-sm h-100">
                                     <div class="card-body p-4">
-                                        <h5 class="card-title">Nom : ${request.user.username}</h5>
+                                        <h5 class="card-title">Nom : ${request.friend.username}</h5>
+                                        <p class="text-muted small">Reçue le : ${request.friendsSince}</p>
+                                        <a class="btn btn-outline-dark btn-sm mt-2" href="${pageContext.request.contextPath}/profile?id=${request.friend.id}">
+                                            <i class="bi bi-person me-1"></i>Profil
+                                        </a>
+                                        <a class="btn btn-outline-success btn-sm mt-2">
+                                            <i class="bi bi-check-circle me-1"></i>Accepter
+                                        </a>
+                                        <a class="btn btn-outline-danger btn-sm mt-2">
+                                            <i class="bi bi-trash me-1"></i>Refuser
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -74,7 +91,7 @@
                 </c:choose>
 
                 <div class="col-12">
-                    <h2 class="h4 mb-4">Liste d'amis</h2>
+                    <h2 class="h4 mb-4">Amis</h2>
                 </div>
                 <c:choose>
                     <c:when test="${empty myFriends}">
@@ -91,6 +108,12 @@
                                     <div class="card-body p-4">
                                         <h5 class="card-title">Nom : ${friendship.friend.username}</h5>
                                         <p class="text-muted small">Amis depuis : ${friendship.friendsSince}</p>
+                                        <a class="btn btn-outline-dark btn-sm mt-2" href="${pageContext.request.contextPath}/profile?id=${friendship.friend.id}">
+                                            <i class="bi bi-person me-1"></i>Profil
+                                        </a>
+                                        <a class="btn btn-outline-danger btn-sm mt-2">
+                                            <i class="bi bi-trash me-1"></i>Supprimer
+                                        </a>
                                     </div>
                                 </div>
                             </div>

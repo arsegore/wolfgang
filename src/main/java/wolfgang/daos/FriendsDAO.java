@@ -52,7 +52,8 @@ public class FriendsDAO {
     public boolean ajouterAmitie(User sender, User receiver) {
         String sql = """
                     UPDATE friends
-                    SET status = 'accepted'
+                    SET status = 'accepted',
+                        accepted_at = NOW()
                     WHERE user_id = ?
                     AND friend_id = ?
                     AND status = 'pending';
@@ -122,7 +123,7 @@ public class FriendsDAO {
                     u.is_admin,
                     u.created_at,
                     u.updated_at,
-                    f.created_at AS friendship_date
+                    f.accepted_at AS friendship_date
                 FROM users u
                 JOIN friends f
                     ON (
@@ -186,7 +187,7 @@ public class FriendsDAO {
                     u.is_admin,
                     u.created_at,
                     u.updated_at,
-                    f.created_at AS friendship_date
+                    f.requested_at AS friendship_date
                 FROM users u
                 JOIN friends f
                     ON f.friend_id = u.id
@@ -243,7 +244,7 @@ public class FriendsDAO {
                     u.is_admin,
                     u.created_at,
                     u.updated_at,
-                    f.created_at AS friendship_date
+                    f.requested_at AS friendship_date
                 FROM users u
                 JOIN friends f
                     ON f.user_id = u.id
