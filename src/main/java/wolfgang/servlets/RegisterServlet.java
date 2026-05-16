@@ -51,8 +51,18 @@ public class RegisterServlet extends HttpServlet {
             req.getRequestDispatcher("/WEB-INF/register.jsp").forward(req, resp);
             return;
         }
+        if(userDAO.verifyExistingUsername(username)){
+            FlashMessageUtils.setFlash(req, "error", "Nom d'utilisateur déjà pris.");
+            req.getRequestDispatcher("/WEB-INF/register.jsp").forward(req, resp);
+            return;
+        }
         if (email == null || email.isBlank()) {
             FlashMessageUtils.setFlash(req, "error", "Email invalide.");
+            req.getRequestDispatcher("/WEB-INF/register.jsp").forward(req, resp);
+            return;
+        }
+        if(userDAO.verifyExistingEmail(email)){
+            FlashMessageUtils.setFlash(req, "error", "Vous ne pouvez avoir qu'un seul compte avec la même adresse mail.");
             req.getRequestDispatcher("/WEB-INF/register.jsp").forward(req, resp);
             return;
         }
