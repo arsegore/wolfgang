@@ -50,7 +50,7 @@
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
                                     <a class="dropdown-item" href="${pageContext.request.contextPath}/profile">
-                                        Profil
+                                        <i class="bi bi-person me-1"></i>Profil
                                     </a>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
