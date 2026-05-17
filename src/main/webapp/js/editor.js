@@ -1,34 +1,34 @@
-var KEY_W       = 62;
-var HEADER_H    = 28;
-var CELL_W      = 40;
-var CELL_H      = 14;
-var PITCH_MIN   = 24;
-var PITCH_MAX   = 107;
-var PITCHES     = PITCH_MAX - PITCH_MIN + 1;
+var KEY_W       = 62; // largeur du clavier à gauche
+var HEADER_H    = 28; // hauteur de la règle des temps en haut
+var CELL_W      = 40; // largeur colonne (d'1 temps du coup)
+var CELL_H      = 14; // hauteur de ligne (= 1 demi-ton)
+var PITCH_MIN   = 24; // note la plus basse, C1 
+var PITCH_MAX   = 107; // note la plus haute, B7 
+var PITCHES     = PITCH_MAX - PITCH_MIN + 1; // nb de notes
 
 var NOTE_NAMES      = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 var BLACK_SEMITONES = [1, 3, 6, 8, 10];
 
-var tracks           = [];
-var activeTrackIndex = 0;
-var scrollX          = 0;
-var scrollY          = 0;
-var totalBeats       = 32;
-var beatsPerBar      = 4;
-var currentTool      = 'draw';
+var tracks           = []; // alimenté ddepuis le json
+var activeTrackIndex = 0; // la track choisie
+var scrollX          = 0; // val par défaut du scroll horizontal
+var scrollY          = 0; // idem vertical
+var totalBeats       = 32; // nb total de temps chargés par défaut
+var beatsPerBar      = 4; // nb de temps par mesure
+var currentTool      = 'draw'; // outil sélectionné par défaut
 
-var canvas, ctx;
+var canvas, ctx; // pour dessiner...
 var scrollXInput, scrollYInput;
 var tabsContainer, cursorInfo;
 
-// Instance globale de la WebSocket MIDI
-var midiSocket;
+var ws; // websocket de l'éditeur
 
 // démarrage
 function initEditor(tracksData, bpb) {
     tracks      = tracksData || [];
     beatsPerBar = bpb || 4;
 
+    // récup des éléments html
     canvas        = document.getElementById('midi-canvas');
     ctx           = canvas.getContext('2d');
     scrollXInput  = document.getElementById('scroll-x');
@@ -38,13 +38,13 @@ function initEditor(tracksData, bpb) {
 
     resizeCanvas();
 
-    // on centre sur C4
+    // on centre verticalement sur C4
     var c4Row = PITCH_MAX - 60;
     scrollY = Math.max(0, c4Row * CELL_H - Math.floor((canvas.height - HEADER_H) / 2));
 
-    // --- INITIALISATION DE LA WEBSOCKET FULL DUPLEX ---
-    initMidiWebSocket();
+    initWebSocket();
 
+    // création des éléments puis rendu
     buildTrackTabs();
     updateScrollbarLimits();
     syncScrollbars();
@@ -52,25 +52,23 @@ function initEditor(tracksData, bpb) {
     render();
 }
 
-// Initialisation de la connexion temps réel
-function initMidiWebSocket() {
-    // On cible le Endpoint configuré côté Java (en minuscules pour pallier la casse)
-    midiSocket = new WebSocket("ws://" + window.location.host + COMPOSITION_DATA.contextPath + '/editeur/' + COMPOSITION_DATA.id);
+// initialisation de la ws
+function initWebSocket() {
+    ws = new WebSocket("ws://" + window.location.host + COMPOSITION_DATA.contextPath + '/editeur/' + COMPOSITION_DATA.id);
 
-    midiSocket.onopen = function() {
-        console.log("Éditeur connecté en temps réel sur la partition #" + COMPOSITION_DATA.id);
+    ws.onopen = function() {
+        console.log("WS connected for composition #" + COMPOSITION_DATA.id);
     };
 
-    midiSocket.onmessage = function(event) {
+    ws.onmessage = function(event) {
         var response = JSON.parse(event.data);
         if (!response.success) return;
 
-        // Traitement des notifications de broadcast du serveur
+        // une note a été ajt
         if (response.action === 'NOTE_ADDED') {
-            // On cherche la piste concernée
             var targetTrack = tracks.find(function(t) { return t.id === response.trackId; });
             if (targetTrack) {
-                // On évite les doublons graphiques
+                // check pour éviter les doublons (au moins côté client)
                 var exists = targetTrack.notes.some(function(n) { return n.id === response.id; });
                 if (!exists) {
                     targetTrack.notes.push({
@@ -88,8 +86,8 @@ function initMidiWebSocket() {
                 }
             }
         }
+        // une note a été supprimée
         else if (response.action === 'NOTE_DELETED') {
-            // On cherche la note dans toutes les pistes pour la supprimer
             tracks.forEach(function(track) {
                 var index = track.notes.findIndex(function(n) { return n.id === response.noteId; });
                 if (index >= 0) {
@@ -98,20 +96,20 @@ function initMidiWebSocket() {
                 }
             });
         }
+        // une piste a été ajt
         else if (response.action === 'TRACK_CREATED') {
-            // Une nouvelle piste a été ajoutée par nous ou un collaborateur
             tracks.push(response.track);
             buildTrackTabs();
             render();
         }
     };
 
-    midiSocket.onerror = function(error) {
-        console.error("Erreur WebSocket Éditeur : ", error);
+    ws.onerror = function(error) {
+        console.error("Erreur communication sur l'éditeur : ", error);
     };
 
-    midiSocket.onclose = function() {
-        console.log("Connexion de l'éditeur perdue.");
+    ws.onclose = function() {
+        console.log("Connexion à l'éditeur perdue.");
     };
 }
 
@@ -245,19 +243,16 @@ function onMouseDown(e) {
     track    = tracks[activeTrackIndex];
     existing = findNoteAt(track, beat, pitch);
 
-    // Changement d'approche ici : plus de manipulation locale directe du tableau, on délègue à la WebSocket
     if (existing >= 0) {
         var note = track.notes[existing];
         if (note.id > 0) {
-            // Émission de la suppression via WS
-            midiSocket.send(JSON.stringify({
+            ws.send(JSON.stringify({
                 action: 'DELETE_NOTE',
                 data: { noteId: note.id }
             }));
         }
     } else if (currentTool === 'draw') {
-        // Émission de l'ajout via WS
-        midiSocket.send(JSON.stringify({
+        ws.send(JSON.stringify({
             action: 'ADD_NOTE',
             data: {
                 trackId: track.id,
@@ -496,7 +491,7 @@ function drawNotes() {
     }
 }
 
-// Boîte de dialogue pour ajouter une piste
+// modal d'ajout d'une piste
 function onAddTrackClick() {
     var instruments, sel, i, opt;
 
@@ -514,7 +509,7 @@ function onAddTrackClick() {
     new bootstrap.Modal(document.getElementById('modal-new-track')).show();
 }
 
-// Soumission de la création d'une piste
+// création d'une piste
 function onCreateTrack() {
     var name, instrumentId, color;
 
@@ -528,7 +523,7 @@ function onCreateTrack() {
     }
 
     // Émission de la création de la piste via WS
-    midiSocket.send(JSON.stringify({
+    ws.send(JSON.stringify({
         action: 'CREATE_TRACK',
         data: {
             name: name,
@@ -551,8 +546,6 @@ function lightenColor(hex, amount) {
     b = Math.min(255, b + amount);
     return '#' + pad2(r.toString(16)) + pad2(g.toString(16)) + pad2(b.toString(16));
 }
-
-// (Les anciennes fonctions saveNote et deleteNote basées sur XHR ont été nettoyées)
 
 function pad2(s) {
     return s.length === 1 ? '0' + s : s;
