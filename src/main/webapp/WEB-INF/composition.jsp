@@ -1,7 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
-
 <jsp:include page="include/header.jsp">
     <jsp:param name="title" value="${composition.title} — Wolfgang"/>
 </jsp:include>
@@ -18,12 +17,20 @@
             <p class="text-muted">Référence : #${composition.id}</p>
         </div>
 
-        <%-- Type d acces --%>
-        <c:choose>
+        <%-- Actions à droite --%>
+        <div class="text-end d-flex gap-2 align-items-center">
 
-            <%-- Propriétaire --%>
-            <c:when test="${sessionScope.user.id == composition.owner.id}">
-                <div class="text-end">
+            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal-import">
+                <i class="bi bi-upload me-1"></i> Importer des données (.txt)
+            </button>
+
+            <a href="${pageContext.request.contextPath}/composition/export?id=${composition.id}" class="btn btn-outline-success">
+                <i class="bi bi-download me-1"></i> Exporter les données (.txt)
+            </a>
+
+            <c:choose>
+                <%-- Propriétaire --%>
+                <c:when test="${sessionScope.user.id == composition.owner.id}">
                     <form method="post" action="${pageContext.request.contextPath}/composition/view?id=${composition.id}" class="d-inline">
                         <input type="hidden" name="id" value="${composition.id}" />
                         <input type="hidden" name="action" value="updateAccess"/>
@@ -32,18 +39,16 @@
                             Accès : ${composition.accessType}
                         </button>
                     </form>
-                </div>
-            </c:when>
+                </c:when>
 
-            <%-- Autres (collaborateurs ou publique) --%>
-            <c:otherwise>
-                <div class="text-end">
+                <%-- Autres --%>
+                <c:otherwise>
                     <span class="badge ${composition.accessType == 'public' ? 'bg-success' : 'bg-danger'} fs-6">
                         Accès : ${composition.accessType}
                     </span>
-                </div>
-            </c:otherwise>
-        </c:choose>
+                </c:otherwise>
+            </c:choose>
+        </div>
     </div>
 
     <%-- Editeur --%>
@@ -287,7 +292,29 @@
     </div>
 </div>
 
-<%-- modal création de piste --%>
+<div class="modal fade" id="modal-import" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-primary"><i class="bi bi-file-earmark-arrow-up me-1"></i> Importer des pistes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small">Sélectionnez le fichier <code>.txt</code>. Le script lira son flux de texte brut.</p>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Fichier source</label>
+                    <input type="file" id="import-file-input" class="form-control form-control-sm" accept=".txt">
+                </div>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-sm btn-success" onclick="declencherImportationCours()">Lancer l'import</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%-- Modal création de piste --%>
 <div class="modal fade" id="modal-new-track" tabindex="-1" aria-labelledby="modal-new-track-label" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -326,12 +353,16 @@
         contextPath: '${pageContext.request.contextPath}',
         canEdit: ${canEdit}
     };
+</script>
+<script src="${pageContext.request.contextPath}/js/editor.js"></script>
+<script src="${pageContext.request.contextPath}/js/import.js"></script>
+<script src="${pageContext.request.contextPath}/js/chatComposition.js"></script>
+<script>
 
     window.addEventListener('load', function () {
         initEditor(COMPOSITION_DATA.tracks, 4);
     });
 </script>
-<script src="${pageContext.request.contextPath}/js/editor.js"></script>
-<script src="${pageContext.request.contextPath}/js/chat.js"></script>
+
 
 <%@include file="include/footer.jsp"%>
