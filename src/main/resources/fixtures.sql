@@ -1,23 +1,23 @@
 USE wolfgang_db;
 
-INSERT INTO instruments (id, name) VALUES
-(1,  'Piano'),
-(2,  'Guitare acoustique'),
-(3,  'Guitare électrique'),
-(4,  'Guitare basse'),
-(5,  'Batterie'),
-(6,  'Violon'),
-(7,  'Alto'),
-(8,  'Violoncelle'),
-(9,  'Contrebasse'),
-(10, 'Trompette'),
-(11, 'Trombone'),
-(12, 'Saxophone alto'),
-(13, 'Flûte traversière'),
-(14, 'Clarinette'),
-(15, 'Orgue'),
-(16, 'Synthétiseur'),
-(17, 'Harpe');
+INSERT INTO instruments (id, name, wave_type) VALUES
+(1,  'Piano',              'triangle'),
+(2,  'Guitare acoustique', 'triangle'),
+(3,  'Guitare électrique', 'sawtooth'),
+(4,  'Guitare basse',      'sine'),
+(5,  'Batterie',           'square'),
+(6,  'Violon',             'sawtooth'),
+(7,  'Alto',               'sawtooth'),
+(8,  'Violoncelle',        'sawtooth'),
+(9,  'Contrebasse',        'sine'),
+(10, 'Trompette',          'square'),
+(11, 'Trombone',           'square'),
+(12, 'Saxophone alto',     'sawtooth'),
+(13, 'Flûte traversière',  'sine'),
+(14, 'Clarinette',         'square'),
+(15, 'Orgue',              'sine'),
+(16, 'Synthétiseur',       'sawtooth'),
+(17, 'Harpe',              'triangle');
 
 # tous les users ont 'password' comme mdp
 INSERT INTO users (id, username, email, password, is_admin, is_verified, created_at, updated_at) VALUES
