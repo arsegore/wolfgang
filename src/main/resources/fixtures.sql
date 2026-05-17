@@ -35,6 +35,11 @@ INSERT INTO compositions (id, title, description, tempo, access_type, owner_id, 
 (6, 'Hopes and Dreams', 'Asriel </3', 120, 'private', 1, '2026-05-02 11:00:00', '2026-05-02 11:00:00');
 
 
+INSERT INTO informations (title, description, created_at) VALUES
+('Bienvenue sur Wolfgang', 'La plateforme de composition collaborative est maintenant en ligne. Créez, partagez et collaborez sur vos compositions musicales.', '2026-01-10 10:00:00'),
+('Nouvelle fonctionnalité : partage par lien', 'Il est désormais possible de partager une composition via un lien unique, sans rendre la composition publique.', '2026-03-01 14:00:00'),
+('Mise à jour de l''éditeur', 'L''éditeur de partition a été amélioré : meilleure gestion des tempos et nouveaux instruments disponibles.', '2026-04-15 09:30:00');
+
 INSERT INTO composition_members (composition_id, user_id, role) VALUES
 -- owners
 (1, 3, 'owner'),

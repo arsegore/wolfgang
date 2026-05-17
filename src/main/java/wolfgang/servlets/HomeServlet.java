@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import wolfgang.config.DatabaseConfig;
 import wolfgang.daos.CompositionDAO;
+import wolfgang.daos.InformationDAO;
 import wolfgang.daos.UserDAO;
 import wolfgang.models.Composition;
 import wolfgang.models.User;
@@ -19,12 +20,14 @@ import java.util.List;
 public class HomeServlet extends HttpServlet {
     UserDAO userDAO;
     CompositionDAO compositionDAO;
+    InformationDAO informationDAO;
 
     @Override
     public void init() throws ServletException {
         DatabaseConfig.init(getServletContext());
         userDAO = new UserDAO();
         compositionDAO = new CompositionDAO();
+        informationDAO = new InformationDAO();
     }
 
     @Override
@@ -33,6 +36,9 @@ public class HomeServlet extends HttpServlet {
         List<Composition> myLastCompo;
         List<Composition> friendsLastCompo;
         List<Composition> publicLastCompo;
+
+        // Dernières actualités
+        req.setAttribute("informations", informationDAO.findAll());
 
         // Dernières compositions publiques
         publicLastCompo = compositionDAO.findPublic(6);
