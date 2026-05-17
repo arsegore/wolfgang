@@ -33,6 +33,9 @@
                 <li class="nav-item">
                     <a class="nav-link ${param.activePage == 'compositions' ? 'active' : ''}" href="${pageContext.request.contextPath}/composition/list">Compositions</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link ${param.activePage == 'friends' ? 'active' : ''}" href="${pageContext.request.contextPath}/friends">Liste d'amis</a>
+                </li>
             </ul>
 
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
@@ -51,7 +54,11 @@
                                 <span>${sessionScope.user.username}</span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><h6 class="dropdown-header">${sessionScope.user.email}</h6></li>
+                                <li>
+                                    <a class="dropdown-item" href="${pageContext.request.contextPath}/profile">
+                                        <i class="bi bi-person me-1"></i>Profil
+                                    </a>
+                                </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <a class="dropdown-item text-danger" href="${pageContext.request.contextPath}/logout">

@@ -11,31 +11,34 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import wolfgang.config.DatabaseConfig;
 import wolfgang.daos.FriendsDAO;
-import wolfgang.daos.UserDAO;
 import wolfgang.models.Friendship;
 import wolfgang.models.User;
 
 @WebServlet("/friends")
 public class FriendsList extends HttpServlet {
-    private UserDAO userDAO;
     private FriendsDAO friendsDAO;
 
     @Override
     public void init() throws ServletException {
         DatabaseConfig.init(getServletContext());
-        userDAO = new UserDAO();
         friendsDAO = new FriendsDAO();
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession();
-        List<Friendship> myFriends;
+        List<Friendship> myFriends; // liste d'amis
+        List<Friendship> mySentRequests; // demandes envoyées
+        List<Friendship> myReceivedRequests; // demandes reçues
         User user = (User) session.getAttribute("user");
 
-        if(user != null) {
+        if (user != null) {
             myFriends = friendsDAO.findFriends(user);
+            mySentRequests = friendsDAO.findSentRequests(user);
+            myReceivedRequests = friendsDAO.findReceivedRequests(user);
             req.setAttribute("myFriends", myFriends);
+            req.setAttribute("mySentRequests", mySentRequests);
+            req.setAttribute("myReceivedRequests", myReceivedRequests);
         }
 
         req.getRequestDispatcher("/WEB-INF/friends_list.jsp").forward(req, resp);
