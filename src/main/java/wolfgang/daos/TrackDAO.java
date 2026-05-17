@@ -14,9 +14,9 @@ public class TrackDAO {
     /**
      * Insère une nouvelle piste dans la bdd
      * @param track
-     * @return vrai si l'insertion a réussi, faux sinon
+     * @return l'id de la piste insérée
      */
-    public boolean create(Track track) {
+    public int create(Track track) {
         String sql = """
 					INSERT INTO tracks (composition_id, name, instrument_id, color, position)
 					VALUES (?, ?, ?, ?, ?);
@@ -27,7 +27,7 @@ public class TrackDAO {
                         DatabaseConfig.DB_URL,
                         DatabaseConfig.DB_LOGIN,
                         DatabaseConfig.DB_PASSWD);
-                PreparedStatement stmt = con.prepareStatement(sql);
+                PreparedStatement stmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         ) {
             stmt.setInt(1, track.getComposition().getId());
             stmt.setString(2, track.getName());
@@ -35,10 +35,12 @@ public class TrackDAO {
             stmt.setString(4, track.getColor());
             stmt.setInt(5, track.getPosition());
 
-            return stmt.executeUpdate() > 0;
+            stmt.executeUpdate();
+            ResultSet rs = stmt.getGeneratedKeys();
+            return rs.next() ? rs.getInt(1) : -1;
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
+            return -1;
         }
     }
 
