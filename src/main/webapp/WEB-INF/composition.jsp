@@ -79,12 +79,14 @@
         </div>
 
         <div class="editor-toolbar">
+            <c:if test="${canEdit}">
             <button id="tool-draw" class="btn btn-sm btn-primary active">
                 <i class="bi bi-pencil-fill"></i> Crayon
             </button>
             <button id="tool-erase" class="btn btn-sm btn-outline-secondary">
                 <i class="bi bi-eraser-fill"></i> Gomme
             </button>
+            </c:if>
             <span id="cursor-info"></span>
         </div>
     </div>
@@ -192,34 +194,86 @@
                 </div>
             </div>
 
-            <%-- Collaborateurs --%>
-            <div class="card shadow-sm">
-                <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Collaborateurs</h5>
-                    <c:if test="${sessionScope.user.id == composition.owner.id}">
-                        <a href="${pageContext.request.contextPath}/jspQuoiMettreNonPlus?compositionId=${composition.id}" class="btn btn-outline-primary btn-sm">
-                            Inviter
-                        </a>
-                    </c:if>
+            <%-- édition libre ou pas (toggle) --%>
+            <c:if test="${sessionScope.user.id == composition.owner.id && composition.accessType == 'public'}">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body d-flex align-items-center justify-content-between gap-3">
+                        <div>
+                            <h6 class="mb-0">Édition libre</h6>
+                            <small class="text-muted">Autoriser tous les visiteurs à modifier</small>
+                        </div>
+                        <form method="post" action="${pageContext.request.contextPath}/composition/view?id=${composition.id}" class="mb-0">
+                            <input type="hidden" name="action" value="updatePublicEditable"/>
+                            <input type="hidden" name="publicEditable" value="${composition.publicEditable ? '0' : '1'}"/>
+                            <button type="submit" class="btn btn-sm ${composition.publicEditable ? 'btn-success' : 'btn-outline-secondary'}">
+                                ${composition.publicEditable ? 'Activé' : 'Désactivé'}
+                            </button>
+                        </form>
+                    </div>
                 </div>
+            </c:if>
+
+            <%-- collaborateurs --%>
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Collaborateurs</h5>
+                </div>
+
+                <%-- formulaire d'ajt de collaborateur (owner seulement) --%>
+                <c:if test="${sessionScope.user.id == composition.owner.id}">
+                    <div class="card-body border-bottom">
+                        <form method="post" action="${pageContext.request.contextPath}/composition/view?id=${composition.id}" class="d-flex flex-wrap gap-2 align-items-center">
+                            <input type="hidden" name="action" value="addMember"/>
+                            <input type="text" name="username" class="form-control form-control-sm flex-grow-1"
+                                   placeholder="Pseudo du collaborateur" required style="min-width:140px">
+                            <div class="btn-group btn-group-sm" role="group">
+                                <input type="radio" class="btn-check" name="role" id="role-editor" value="editor" autocomplete="off" checked>
+                                <label class="btn btn-outline-primary" for="role-editor">Éditeur</label>
+                                <input type="radio" class="btn-check" name="role" id="role-viewer" value="viewer" autocomplete="off">
+                                <label class="btn btn-outline-secondary" for="role-viewer">Lecture</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm">Ajouter</button>
+                        </form>
+                    </div>
+                </c:if>
+
+                <%-- liste des collaborateurs --%>
                 <div class="card-body p-0">
                     <ul class="list-group list-group-flush">
                         <c:choose>
                             <c:when test="${empty composition.members}">
-                                <li class="list-group-item text-muted small">Aucun collaborateur externe.</li>
+                                <li class="list-group-item text-muted small px-3 py-2">Aucun collaborateur.</li>
                             </c:when>
                             <c:otherwise>
                                 <c:forEach var="entry" items="${composition.members}">
-                                    <li class="list-group-item">
-                                        <div class="d-flex align-items-center">
-                                            <div class="bg-primary text-white rounded-circle p-2 me-3" style="width: 35px; height: 35px; display: flex; align-items:center; justify-content:center;">
+                                    <li class="list-group-item d-flex align-items-center justify-content-between px-3 py-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                                                 style="width:32px;height:32px;font-size:13px">
                                                 ${entry.key.username.substring(0,1).toUpperCase()}
                                             </div>
                                             <div>
-                                                <h6 class="mb-0">${entry.key.username}</h6>
-                                                <small class="text-muted">${entry.value}</small>
+                                                <div class="fw-semibold small">${entry.key.username}</div>
+                                                <c:choose>
+                                                    <c:when test="${entry.key.id == composition.owner.id}">
+                                                        <span class="badge bg-warning text-dark py-1">Propriétaire</span>
+                                                    </c:when>
+                                                    <c:when test="${entry.value == 'editor'}">
+                                                        <span class="badge bg-primary py-1">Éditeur</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="badge bg-secondary py-1">Lecture seule</span>
+                                                    </c:otherwise>
+                                                </c:choose>
                                             </div>
                                         </div>
+                                        <c:if test="${sessionScope.user.id == composition.owner.id && entry.key.id != composition.owner.id}">
+                                            <form method="post" action="${pageContext.request.contextPath}/composition/view?id=${composition.id}" class="mb-0">
+                                                <input type="hidden" name="action" value="removeMember"/>
+                                                <input type="hidden" name="userId" value="${entry.key.id}"/>
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2">×</button>
+                                            </form>
+                                        </c:if>
                                     </li>
                                 </c:forEach>
                             </c:otherwise>
@@ -230,7 +284,7 @@
 
             <%-- Bouton Retour --%>
             <div class="mt-4">
-                <a href="${pageContext.request.contextPath}/composition/display" class="btn btn-outline-secondary w-100">
+                <a href="${pageContext.request.contextPath}/composition/list" class="btn btn-outline-secondary w-100">
                     <i class="bi bi-arrow-left"></i> Retour à la liste
                 </a>
             </div>
@@ -296,7 +350,8 @@
         tempo: ${composition.tempo},
         tracks: ${tracksJson},
         instruments: ${instrumentsJson},
-        contextPath: '${pageContext.request.contextPath}'
+        contextPath: '${pageContext.request.contextPath}',
+        canEdit: ${canEdit}
     };
 </script>
 <script src="${pageContext.request.contextPath}/js/editor.js"></script>
