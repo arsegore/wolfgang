@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="wolfgang.models.Information, java.util.List" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
 <jsp:include page="include/header.jsp">
@@ -15,8 +16,30 @@
     <div class="row mb-5">
 
         <%-- Actualités --%>
-
-        <%-- TODO --%>
+        <%
+            List<Information> informations = (List<Information>) request.getAttribute("informations");
+            if (informations != null && !informations.isEmpty()) {
+        %>
+        <div class="col-12 mb-4">
+            <h2 class="h3 mb-3">Actualités</h2>
+            <div class="row">
+                <% for (Information info : informations) { %>
+                <div class="col-md-4 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><%= info.getTitle() %></h5>
+                            <p class="card-text text-muted small" style="white-space: pre-line;"><%= info.getDescription() != null ? info.getDescription() : "" %></p>
+                        </div>
+                        <div class="card-footer bg-white border-0 text-muted small">
+                            <%= info.getCreatedAt() != null ? info.getCreatedAt().toLocalDate() : "" %>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
+            </div>
+            <hr class="my-4">
+        </div>
+        <% } %>
 
         <%-- Bloc dernière composition utilisateur/amis --%>
         <c:if test="${not empty sessionScope.user}">
