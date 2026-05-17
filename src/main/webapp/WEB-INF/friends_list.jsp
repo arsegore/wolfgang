@@ -45,9 +45,9 @@
                             <div class="col-md-4 mb-4">
                                 <div class="card shadow-sm h-100">
                                     <div class="card-body p-4">
-                                        <h5 class="card-title">Nom : ${request.friend.username}</h5>
+                                        <h5 class="card-title">${request.friend.username}</h5>
                                         <p class="text-muted small">Envoyée le : ${request.friendsSince}</p>
-                                        <a class="btn btn-outline-dark btn-sm mt-2" href="${pageContext.request.contextPath}/profile?id=${request.friend.id}">
+                                        <a class="btn btn-outline-primary btn-sm mt-2" href="${pageContext.request.contextPath}/profile?id=${request.friend.id}">
                                             <i class="bi bi-person me-1"></i>Profil
                                         </a>
                                         <form method="post" class="d-inline-block" action="${pageContext.request.contextPath}/friends/action">
@@ -82,9 +82,9 @@
                             <div class="col-md-4 mb-4">
                                 <div class="card shadow-sm h-100">
                                     <div class="card-body p-4">
-                                        <h5 class="card-title">Nom : ${request.friend.username}</h5>
+                                        <h5 class="card-title">${request.friend.username}</h5>
                                         <p class="text-muted small">Reçue le : ${request.friendsSince}</p>
-                                        <a class="btn btn-outline-dark btn-sm mt-2" href="${pageContext.request.contextPath}/profile?id=${request.friend.id}">
+                                        <a class="btn btn-outline-primary btn-sm mt-2" href="${pageContext.request.contextPath}/profile?id=${request.friend.id}">
                                             <i class="bi bi-person me-1"></i>Profil
                                         </a>
                                         <form method="post" class="d-inline-block" action="${pageContext.request.contextPath}/friends/action">
@@ -126,9 +126,9 @@
                             <div class="col-md-4 mb-4">
                                 <div class="card shadow-sm h-100">
                                     <div class="card-body p-4">
-                                        <h5 class="card-title">Nom : ${friendship.friend.username}</h5>
+                                        <h5 class="card-title">${friendship.friend.username}</h5>
                                         <p class="text-muted small">Amis depuis : ${friendship.friendsSince}</p>
-                                        <a class="btn btn-outline-dark btn-sm mt-2" href="${pageContext.request.contextPath}/profile?id=${friendship.friend.id}">
+                                        <a class="btn btn-outline-primary btn-sm mt-2" href="${pageContext.request.contextPath}/profile?id=${friendship.friend.id}">
                                             <i class="bi bi-person me-1"></i>Profil
                                         </a>
                                         <form method="post" class="d-inline-block" action="${pageContext.request.contextPath}/friends/action">
