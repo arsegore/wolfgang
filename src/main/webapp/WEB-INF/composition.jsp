@@ -46,7 +46,7 @@
         </c:choose>
     </div>
 
-    <%-- Editeur -- %>
+    <%-- Editeur --%>
     <div class="editor-wrapper mb-4">
 
         <div id="track-tabs" class="track-tabs-bar">
