@@ -9,17 +9,20 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import wolfgang.config.DatabaseConfig;
+import wolfgang.daos.FriendsDAO;
 import wolfgang.daos.UserDAO;
 import wolfgang.models.User;
 
 @WebServlet("/profile")
 public class Profile extends HttpServlet {
     private UserDAO userDAO;
+    private FriendsDAO friendsDAO;
 
     @Override
     public void init() throws ServletException {
         DatabaseConfig.init(getServletContext());
         userDAO = new UserDAO();
+        friendsDAO = new FriendsDAO();
     }
 
     @Override
@@ -50,8 +53,29 @@ public class Profile extends HttpServlet {
         // Vérifie si c'est son propre profil
         boolean isOwnProfile = (connectedUser.getId() == profileUser.getId());
 
+        // Pour le bouton Ajouter en ami (qu'il change correctement)
+        boolean isFriend = false;
+        boolean sentRequest = false;
+        boolean receivedRequest = false;
+
+        // Vérifications seulement si ce n'est pas notre profil
+        if (!isOwnProfile) {
+            isFriend = friendsDAO.sontAmis(connectedUser, profileUser);
+
+            // demande envoyée par nous
+            sentRequest = friendsDAO.demandeEnvoyee(connectedUser, profileUser);
+
+            // demande reçue de lui
+            receivedRequest = friendsDAO.demandeEnvoyee(profileUser, connectedUser);
+            System.out.println("LALALALALALALALA " + isFriend + " / " + sentRequest + " / " + receivedRequest);
+        }
+
         req.setAttribute("user", profileUser);
         req.setAttribute("isOwnProfile", isOwnProfile);
+
+        req.setAttribute("isFriend", isFriend);
+        req.setAttribute("sentRequest", sentRequest);
+        req.setAttribute("receivedRequest", receivedRequest);
 
         req.getRequestDispatcher("/WEB-INF/profile.jsp").forward(req, resp);
     }

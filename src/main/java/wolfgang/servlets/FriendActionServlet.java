@@ -121,7 +121,14 @@ public class FriendActionServlet extends HttpServlet {
                 session.setAttribute("error", "Action inconnue.");
                 break;
         }
-        resp.sendRedirect(req.getContextPath() + "/friends");
+
+        // si sur profil, on reste sur profil / si sur liste d'amis, on reste sur liste d'amis
+        String referer = req.getHeader("Referer");
+        if (referer != null) {
+            resp.sendRedirect(referer);
+        } else {
+            resp.sendRedirect(req.getContextPath() + "/friends");
+        }
     }
 
     @Override

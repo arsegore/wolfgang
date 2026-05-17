@@ -62,13 +62,67 @@
         </c:choose>
         <c:choose>
             <c:when test="${!isOwnProfile}">
-                <form method="post" action="${pageContext.request.contextPath}/friends/action">
-                    <input type="hidden" name="action" value="add">
-                    <input type="hidden" name="id" value="${user.id}">
-                    <button class="btn btn-outline-primary btn-sm">
-                        <i class="bi bi-person-plus me-1"></i>Ajouter en ami
-                    </button>
-                </form>
+                <c:choose>
+                    <%-- Déjà amis --%>
+                    <c:when test="${isFriend}">
+                        <form method="post" class="d-inline-block" action="${pageContext.request.contextPath}/friends/action">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="id" value="${user.id}">
+                            <button class="btn btn-outline-success btn-sm mt-2" disabled>
+                                <i class="bi bi-check2-circle me-1"></i>Déjà amis
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm mt-2">
+                                <i class="bi bi-trash me-1"></i>Supprimer
+                            </button>
+                        </form>
+                    </c:when>
+
+                    <%-- Demande envoyée --%>
+                    <c:when test="${sentRequest}">
+                        <form method="post" class="d-inline-block" action="${pageContext.request.contextPath}/friends/action">
+                            <input type="hidden" name="action" value="cancel">
+                            <input type="hidden" name="id" value="${user.id}">
+                            <button class="btn btn-outline-secondary btn-sm mt-2" disabled>
+                                <i class="bi bi-hourglass-split me-1"></i>Demande envoyée
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm mt-2">
+                                <i class="bi bi-person-dash me-1"></i>Annuler
+                            </button>
+                        </form>
+                    </c:when>
+
+                    <%-- Demande reçue --%>
+                    <c:when test="${receivedRequest}">
+                        <div class="d-flex gap-1 mt-2">
+                            <form method="post" class="d-inline-block" action="${pageContext.request.contextPath}/friends/action">
+                                <input type="hidden" name="action" value="accept">
+                                <input type="hidden" name="id" value="${user.id}">
+                                <button class="btn btn-outline-success btn-sm mt-2">
+                                    <i class="bi bi-check-circle me-1"></i>Accepter
+                                </button>
+                            </form>
+
+                            <form method="post" class="d-inline-block" action="${pageContext.request.contextPath}/friends/action">
+                                <input type="hidden" name="action" value="refuse">
+                                <input type="hidden" name="id" value="${user.id}">
+                                <button class="btn btn-outline-danger btn-sm mt-2">
+                                    <i class="bi bi-x-circle me-1"></i>Refuser
+                                </button>
+                            </form>
+                        </div>
+                    </c:when>
+
+                    <%-- Aucun lien --%>
+                    <c:otherwise>
+                        <form method="post" class="d-inline-block" action="${pageContext.request.contextPath}/friends/action">
+                            <input type="hidden" name="action" value="add">
+                            <input type="hidden" name="id" value="${user.id}">
+                            <button class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-person-plus me-1"></i>Ajouter en ami
+                            </button>
+                        </form>
+                    </c:otherwise>
+                </c:choose>
             </c:when>
         </c:choose>
     </div>
