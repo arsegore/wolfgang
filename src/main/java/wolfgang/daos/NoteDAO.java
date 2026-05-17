@@ -42,6 +42,24 @@ public class NoteDAO {
         }
     }
 
+    public boolean updateDuration(int id, float duration) {
+        String sql = "UPDATE notes SET duration = ? WHERE id = ?;";
+        try (
+                Connection con = DriverManager.getConnection(
+                        DatabaseConfig.DB_URL,
+                        DatabaseConfig.DB_LOGIN,
+                        DatabaseConfig.DB_PASSWD);
+                PreparedStatement stmt = con.prepareStatement(sql)
+        ) {
+            stmt.setFloat(1, duration);
+            stmt.setInt(2, id);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     /**
      * Met à jour une note
      * @param note
