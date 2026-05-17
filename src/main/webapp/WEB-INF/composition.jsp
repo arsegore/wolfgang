@@ -128,32 +128,20 @@
                 </div>
             </div>
 
-            <%-- Pistes de la composition --%>
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-                    <h5 class="mb-0 text-primary">Pistes</h5>
-                    <c:if test="${sessionScope.user.id == composition.owner.id}">
-                        <a href="${pageContext.request.contextPath}/jspQuoiMettre?compositionId=${composition.id}" class="btn btn-outline-primary btn-sm">
-                            Ajouter
-                        </a>
-                    </c:if>
+        <%-- chat --%>
+            <div id="chat-config"
+                data-pseudo="${sessionScope.user.username}"
+                data-context="${pageContext.request.contextPath}"
+                class="d-none">
+            </div>
+
+            <div id="chat-container" class="card shadow-sm p-3">
+                <h6 class="card-title text-primary mb-2"><i class="bi bi-chat-dots-fill me-1"></i> Discussion de groupe</h6>
+                <div id="messages" style="height: 180px; overflow-y: scroll; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; background: #fafafa; font-size: 0.9rem; border-radius: 4px;">
                 </div>
-                <div class="card-body">
-                    <c:choose>
-                        <c:when test="${empty composition.tracks}">
-                            <p class="text-muted">Aucune piste enregistrée pour cette composition.</p>
-                        </c:when>
-                        <c:otherwise>
-                            <ul class="list-group list-group-flush">
-                                <c:forEach var="track" items="${composition.tracks}">
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span><i class="bi bi-music-note-beamed me-2"></i> ${track.name}</span>
-                                        <span class="badge bg-light text-dark border">Instrument #${track.instrumentId}</span>
-                                    </li>
-                                </c:forEach>
-                            </ul>
-                        </c:otherwise>
-                    </c:choose>
+                <div class="input-group input-group-sm">
+                    <input type="text" id="messageInput" class="form-control" placeholder="Votre message...">
+                    <button class="btn btn-primary" onclick="send()">Envoyer</button>
                 </div>
             </div>
         </div>
@@ -283,12 +271,12 @@
         instruments: ${instrumentsJson},
         contextPath: '${pageContext.request.contextPath}'
     };
-</script>
-<script src="${pageContext.request.contextPath}/js/editor.js"></script>
-<script>
+
     window.addEventListener('load', function () {
         initEditor(COMPOSITION_DATA.tracks, 4);
     });
 </script>
+<script src="${pageContext.request.contextPath}/js/editor.js"></script>
+<script src="${pageContext.request.contextPath}/js/chat.js"></script>
 
 <%@include file="include/footer.jsp"%>
