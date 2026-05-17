@@ -249,12 +249,20 @@
                                             </div>
                                             <div>
                                                 <div class="fw-semibold small">${entry.key.username}</div>
-                                                <span class="badge ${entry.value == 'editor' ? 'bg-primary' : 'bg-secondary'} py-1">
-                                                    ${entry.value == 'editor' ? 'Éditeur' : 'Lecture seule'}
-                                                </span>
+                                                <c:choose>
+                                                    <c:when test="${entry.key.id == composition.owner.id}">
+                                                        <span class="badge bg-warning text-dark py-1">Propriétaire</span>
+                                                    </c:when>
+                                                    <c:when test="${entry.value == 'editor'}">
+                                                        <span class="badge bg-primary py-1">Éditeur</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="badge bg-secondary py-1">Lecture seule</span>
+                                                    </c:otherwise>
+                                                </c:choose>
                                             </div>
                                         </div>
-                                        <c:if test="${sessionScope.user.id == composition.owner.id}">
+                                        <c:if test="${sessionScope.user.id == composition.owner.id && entry.key.id != composition.owner.id}">
                                             <form method="post" action="${pageContext.request.contextPath}/composition/view?id=${composition.id}" class="mb-0">
                                                 <input type="hidden" name="action" value="removeMember"/>
                                                 <input type="hidden" name="userId" value="${entry.key.id}"/>
