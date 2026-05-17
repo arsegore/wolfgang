@@ -3,10 +3,11 @@ const pseudo = configElement ? configElement.getAttribute("data-pseudo") : "";
 const contextPath = configElement ? configElement.getAttribute("data-context") : "";
 
 if (pseudo && pseudo.trim() !== "") {
-    const socket = new WebSocket("ws://" + window.location.host + contextPath + "/chat/" + pseudo);
+
+    const socket = new WebSocket("ws://" + window.location.host + contextPath + "/chat/" + COMPOSITION_DATA.id + "/" + pseudo);
 
     socket.onopen = function(event){
-        console.log("Connexion ouverte");
+        console.log("Connexion chat ouverte sur la composition #" + COMPOSITION_DATA.id);
         ajouterMessage("Connexion ouverte avec le serveur");
     };
 
@@ -34,10 +35,10 @@ if (pseudo && pseudo.trim() !== "") {
         }
     };
 } else {
-    console.warn("Chat désactivé : Aucun utilisateur connecté en session.");
+    console.warn("Chat désactivé : Mode invité sans compte utilisateur.");
     let zone = document.getElementById("messages");
     if (zone) {
-        zone.innerHTML = "<i>Connectez-vous pour participer à la discussion.</i>";
+        zone.innerHTML = "<i>Veuillez vous connecter pour participer au chat de groupe.</i>";
     }
 }
 
@@ -45,5 +46,6 @@ function ajouterMessage(message){
     let zone = document.getElementById("messages");
     if (zone) {
         zone.innerHTML += message + "<br>";
+        zone.scrollTop = zone.scrollHeight; // Défilement automatique vers le bas
     }
 }

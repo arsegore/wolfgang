@@ -301,7 +301,7 @@
 </script>
 <script src="${pageContext.request.contextPath}/js/editor.js"></script>
 <script src="${pageContext.request.contextPath}/js/import.js"></script>
-<script src="${pageContext.request.contextPath}/js/chat.js"></script>
+<script src="${pageContext.request.contextPath}/js/chatComposition.js"></script>
 <script>
 
     window.addEventListener('load', function () {
