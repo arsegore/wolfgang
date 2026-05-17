@@ -295,4 +295,89 @@ public class FriendsDAO {
 
         return friendRequests;
     }
+
+    /**
+     * Indique si 2 utilisateurs sont amis
+     * @param user1 premier utilisateur
+     * @param user2 second utilisateur
+     * @return vrai s'ils sont amis, faux sinon
+     */
+    public boolean sontAmis(User user1, User user2) {
+        String sql = """
+                SELECT user_id,
+                    friend_id,
+                    status,
+                    requested_at,
+                    accepted_at
+                FROM friends
+                WHERE (
+                    (user_id = ? AND friend_id = ?)
+                    OR
+                    (friend_id = ? AND user_id = ?)
+                )
+                AND status = 'accepted';
+                """;
+
+        try (
+            Connection con = DriverManager.getConnection(
+                DatabaseConfig.DB_URL,
+                DatabaseConfig.DB_LOGIN,
+                DatabaseConfig.DB_PASSWD);
+
+            PreparedStatement stmt = con.prepareStatement(sql);
+        ) {
+            stmt.setInt(1, user1.getId());
+            stmt.setInt(2, user2.getId());
+            stmt.setInt(3, user1.getId());
+            stmt.setInt(4, user2.getId());
+
+            ResultSet rs = stmt.executeQuery();
+
+            return rs.next();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Indique si le 1er utilisateur a envoyé une demande au 2ème
+     * @param sender l'utilisateur qui a éventuellement fait la demande
+     * @param receiver l'utilisateur qui a éventuellement reçu la demande
+     * @return vrai si le 1er a envoyé une demande au 2ème, faux sinon
+     */
+    public boolean demandeEnvoyee(User sender, User receiver) {
+        String sql = """
+                SELECT user_id,
+                    friend_id,
+                    status,
+                    requested_at,
+                    accepted_at
+                FROM friends
+                WHERE user_id = ?
+                AND friend_id = ?
+                AND status = 'pending';
+                """;
+
+        try (
+            Connection con = DriverManager.getConnection(
+                DatabaseConfig.DB_URL,
+                DatabaseConfig.DB_LOGIN,
+                DatabaseConfig.DB_PASSWD);
+
+            PreparedStatement stmt = con.prepareStatement(sql);
+        ) {
+            stmt.setInt(1, sender.getId());
+            stmt.setInt(2, receiver.getId());
+
+            ResultSet rs = stmt.executeQuery();
+
+            return rs.next();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
