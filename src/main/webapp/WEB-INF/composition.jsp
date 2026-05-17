@@ -300,15 +300,14 @@
     };
 </script>
 <script src="${pageContext.request.contextPath}/js/editor.js"></script>
-<script src="${pageContext.request.contextPath}/js/Client.js"></script>
 <script src="${pageContext.request.contextPath}/js/import.js"></script>
+<script src="${pageContext.request.contextPath}/js/chat.js"></script>
 <script>
 
     window.addEventListener('load', function () {
         initEditor(COMPOSITION_DATA.tracks, 4);
     });
 </script>
-<script src="${pageContext.request.contextPath}/js/editor.js"></script>
-<script src="${pageContext.request.contextPath}/js/chat.js"></script>
+
 
 <%@include file="include/footer.jsp"%>
