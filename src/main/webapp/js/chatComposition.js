@@ -46,6 +46,6 @@ function ajouterMessage(message){
     let zone = document.getElementById("messages");
     if (zone) {
         zone.innerHTML += message + "<br>";
-        zone.scrollTop = zone.scrollHeight; // Défilement automatique vers le bas
+        zone.scrollTop = zone.scrollHeight;
     }
 }
