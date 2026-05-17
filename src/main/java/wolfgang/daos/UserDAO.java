@@ -241,6 +241,39 @@ public class UserDAO {
         }
     }
 
+    public User findByUsername(String username) {
+        User user = null;
+        String sql = """
+                    SELECT id, username, email, password, is_admin, is_verified, created_at, updated_at
+                    FROM users
+                    WHERE username = ?;
+                    """;
+
+        try (
+            Connection con = DriverManager.getConnection(
+                DatabaseConfig.DB_URL, DatabaseConfig.DB_LOGIN, DatabaseConfig.DB_PASSWD);
+            PreparedStatement stmt = con.prepareStatement(sql)
+        ) {
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                user = new User(
+                        rs.getInt("id"),
+                        rs.getString("username"),
+                        rs.getString("email"),
+                        rs.getString("password"),
+                        rs.getBoolean("is_admin"),
+                        rs.getBoolean("is_verified"),
+                        rs.getObject("created_at", LocalDateTime.class),
+                        rs.getObject("updated_at", LocalDateTime.class)
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return user;
+    }
+
     public boolean verifyExistingEmail(String email){
         String sql = """
                 SELECT id
