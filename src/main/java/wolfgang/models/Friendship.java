@@ -3,8 +3,8 @@ package wolfgang.models;
 import java.time.LocalDateTime;
 
 public class Friendship {
-
     private User friend;
+
     private LocalDateTime friendsSince; // date demande si pending, date d'acceptation si demande acceptée
 
     public Friendship(User friend, LocalDateTime friendsSince) {

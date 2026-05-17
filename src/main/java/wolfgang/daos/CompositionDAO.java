@@ -16,7 +16,7 @@ public class CompositionDAO {
     /**
      * Insère une nouvelle composition dans la bdd
      * @param composition
-     * @return vrai si l'insertion a réussi, faux sinon
+     * @return l'id de la composition si réussi, -1 sinon
      */
     public static int create(Composition composition) {
         String sql = """
