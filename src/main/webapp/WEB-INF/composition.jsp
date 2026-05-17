@@ -1,28 +1,52 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+
 
 <jsp:include page="include/header.jsp">
     <jsp:param name="title" value="${composition.title} — Wolfgang"/>
 </jsp:include>
 
-<div class="container-fluid py-3 px-4">
+<div class="container py-5">
     <%@ include file="include/flash.jsp"%>
 
-    <div class="d-flex align-items-center justify-content-between mb-3">
+    <%-- Haut de page --%>
+    <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
+
+        <%-- Titre --%>
         <div>
-            <h2 class="mb-0 fw-bold">${composition.title}</h2>
-            <small class="text-muted">${composition.tempo} BPM; #${composition.id}</small>
+            <h1 class="display-5 mb-0">${composition.title}</h1>
+            <p class="text-muted">Référence : #${composition.id}</p>
         </div>
-        <div class="d-flex gap-2 align-items-center">
-            <span class="badge ${composition.accessType == 'public' ? 'bg-success' : 'bg-warning text-dark'}">
-                ${composition.accessType}
-            </span>
-            <a href="${pageContext.request.contextPath}/composition/list" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-arrow-left"></i> Retour
-            </a>
-        </div>
+
+        <%-- Type d acces --%>
+        <c:choose>
+
+            <%-- Propriétaire --%>
+            <c:when test="${sessionScope.user.id == composition.owner.id}">
+                <div class="text-end">
+                    <form method="post" action="${pageContext.request.contextPath}/composition/view?id=${composition.id}" class="d-inline">
+                        <input type="hidden" name="id" value="${composition.id}" />
+                        <input type="hidden" name="action" value="updateAccess"/>
+                        <input type="hidden" name="accessType" value="${composition.accessType == 'public' ? 'private' : 'public'}" />
+                        <button type="submit" class="btn badge ${composition.accessType == 'public' ? 'bg-success' : 'bg-danger'} fs-6 border-0">
+                            Accès : ${composition.accessType}
+                        </button>
+                    </form>
+                </div>
+            </c:when>
+
+            <%-- Autres (collaborateurs ou publique) --%>
+            <c:otherwise>
+                <div class="text-end">
+                    <span class="badge ${composition.accessType == 'public' ? 'bg-success' : 'bg-danger'} fs-6">
+                        Accès : ${composition.accessType}
+                    </span>
+                </div>
+            </c:otherwise>
+        </c:choose>
     </div>
 
+    <%-- Editeur -- %>
     <div class="editor-wrapper mb-4">
 
         <div id="track-tabs" class="track-tabs-bar">
@@ -47,38 +71,149 @@
         </div>
     </div>
 
+    <%-- Partie Basse --%>
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-lg-8">
+
+            <%-- Description de la composition --%>
             <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <h6 class="card-title text-primary mb-3">Informations</h6>
-                    <ul class="list-unstyled mb-0 small">
-                        <li class="mb-1"><strong>Propriétaire :</strong> ${composition.owner.username}</li>
-                        <li class="mb-1"><strong>Tempo :</strong> ${composition.tempo} BPM</li>
-                        <li class="mb-1"><strong>Accès :</strong> ${composition.accessType}</li>
-                        <c:if test="${not empty composition.description}">
-                            <li class="mb-1"><strong>Description :</strong> ${composition.description}</li>
+                <div class="card-body p-4">
+
+                    <%-- Bouton d affichage de l éditeur de description --%>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="card-title mb-3 text-primary">Description</h4>
+                        <c:if test="${sessionScope.user.id == composition.owner.id}">
+                            <button class="btn btn-outline-primary btn-sm" type="button" onclick="document.getElementById('editDescription').classList.toggle('d-none')">
+                                Modifier
+                            </button>
                         </c:if>
-                        <li class="text-muted">Créé le : ${composition.createdAt}</li>
-                        <li class="text-muted">Mis à jour : ${composition.updatedAt}</li>
-                    </ul>
+                    </div>
+
+                    <%-- Affichage de la description --%>
+                    <p class="card-text lead">
+                        <c:choose>
+                            <c:when test="${not empty composition.description}">
+                                ${composition.description}
+                            </c:when>
+                            <c:otherwise>
+                                <p class="text-muted">Aucune description fournie.</p>
+                            </c:otherwise>
+                        </c:choose>
+                    </p>
+
+                    <%-- Editeur de description --%>
+                    <div id="editDescription" class="d-none mt-3">
+                        <form method="post" action="${pageContext.request.contextPath}/composition/view?id=${composition.id}">
+                            <input type="hidden" name="id" value="${composition.id}"/>
+                            <input type="hidden" name="action" value="updateDescription"/>
+                            <textarea class="form-control mb-3" name="description" rows="4">
+                               ${composition.description}
+                            </textarea>
+                            <button type="submit" class="btn btn-primary">Enregistrer</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <%-- Pistes de la composition --%>
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0 text-primary">Pistes</h5>
+                    <c:if test="${sessionScope.user.id == composition.owner.id}">
+                        <a href="${pageContext.request.contextPath}/jspQuoiMettre?compositionId=${composition.id}" class="btn btn-outline-primary btn-sm">
+                            Ajouter
+                        </a>
+                    </c:if>
+                </div>
+                <div class="card-body">
+                    <c:choose>
+                        <c:when test="${empty composition.tracks}">
+                            <p class="text-muted">Aucune piste enregistrée pour cette composition.</p>
+                        </c:when>
+                        <c:otherwise>
+                            <ul class="list-group list-group-flush">
+                                <c:forEach var="track" items="${composition.tracks}">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span><i class="bi bi-music-note-beamed me-2"></i> ${track.name}</span>
+                                        <span class="badge bg-light text-dark border">Instrument #${track.instrumentId}</span>
+                                    </li>
+                                </c:forEach>
+                            </ul>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-light py-2"><h6 class="mb-0">Collaborateurs</h6></div>
+
+        <%-- Partie Droite --%>
+        <div class="col-lg-4">
+
+            <%-- Informations --%>
+            <div class="card shadow-sm mb-4 border-primary">
+                <div class="card-body">
+                    <h5 class="card-title border-bottom pb-2 mb-3">Informations</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <strong>Propriétaire :</strong> <span class="text-primary">${composition.owner.username}</span>
+                        </li>
+                        <li class="mb-2">
+                            <div class="d-flex align-items-center">
+                                <strong>Tempo : </strong>
+                                <c:choose>
+                                    <c:when test="${sessionScope.user.id == composition.owner.id}">
+
+                                        <form method="post" action="${pageContext.request.contextPath}/composition/view?id=${composition.id}" class="d-flex align-items-center gap-2">
+                                            <input type="hidden" name="action" value="updateTempo"/>
+                                            <input type="number" name="tempo" value="${composition.tempo}" min="20" class="form-control form-control-sm" style="width: 120px;"/>
+
+                                            <button type="submit" class="btn btn-success btn-sm">Valider</button>
+                                        </form>
+                                    </c:when>
+
+                                    <c:otherwise>
+                                        <span class="badge bg-info text-dark">${composition.tempo} BPM</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
+                        </li>
+                        <li class="mb-2">
+                            <small class="text-muted d-block">Créé le : ${composition.createdAt}</small>
+                        </li>
+                        <li class="mb-0">
+                            <small class="text-muted d-block">Mise à jour : ${composition.updatedAt}</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <%-- Collaborateurs --%>
+            <div class="card shadow-sm">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Collaborateurs</h5>
+                    <c:if test="${sessionScope.user.id == composition.owner.id}">
+                        <a href="${pageContext.request.contextPath}/jspQuoiMettreNonPlus?compositionId=${composition.id}" class="btn btn-outline-primary btn-sm">
+                            Inviter
+                        </a>
+                    </c:if>
+                </div>
                 <div class="card-body p-0">
                     <ul class="list-group list-group-flush">
                         <c:choose>
                             <c:when test="${empty composition.members}">
-                                <li class="list-group-item text-muted small">Aucun collaborateur.</li>
+                                <li class="list-group-item text-muted small">Aucun collaborateur externe.</li>
                             </c:when>
                             <c:otherwise>
                                 <c:forEach var="entry" items="${composition.members}">
-                                    <li class="list-group-item small">
-                                        <strong>${entry.key.username}</strong>
-                                        <span class="text-muted ms-2">${entry.value}</span>
+                                    <li class="list-group-item">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-primary text-white rounded-circle p-2 me-3" style="width: 35px; height: 35px; display: flex; align-items:center; justify-content:center;">
+                                                ${entry.key.username.substring(0,1).toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">${entry.key.username}</h6>
+                                                <small class="text-muted">${entry.value}</small>
+                                            </div>
+                                        </div>
                                     </li>
                                 </c:forEach>
                             </c:otherwise>
@@ -86,50 +221,12 @@
                     </ul>
                 </div>
             </div>
-        </div>
-        </div>
-        <div id="chat-config"
-            data-pseudo="${sessionScope.user.username}"
-            data-context="${pageContext.request.contextPath}"
-            class="d-none">
-        </div>
 
-        <div id="chat-container" class="card shadow-sm p-3">
-            <h6 class="card-title text-primary mb-2"><i class="bi bi-chat-dots-fill me-1"></i> Discussion de groupe</h6>
-            <div id="messages" style="height: 180px; overflow-y: scroll; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; background: #fafafa; font-size: 0.9rem; border-radius: 4px;">
-            </div>
-            <div class="input-group input-group-sm">
-                <input type="text" id="messageInput" class="form-control" placeholder="Votre message...">
-                <button class="btn btn-primary" onclick="send()">Envoyer</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="modal-new-track" tabindex="-1">
-    <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-            <div class="modal-header py-2">
-                <h6 class="modal-title">Nouvelle piste</h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-2">
-                    <label class="form-label small mb-1">Nom</label>
-                    <input type="text" id="new-track-name" class="form-control form-control-sm" placeholder="Piano, Basse…">
-                </div>
-                <div class="mb-2">
-                    <label class="form-label small mb-1">Instrument</label>
-                    <select id="new-track-instrument" class="form-select form-select-sm"></select>
-                </div>
-                <div class="mb-2">
-                    <label class="form-label small mb-1">Couleur</label>
-                    <input type="color" id="new-track-color" class="form-control form-control-sm form-control-color w-100" value="#4a9eff">
-                </div>
-            </div>
-            <div class="modal-footer py-2">
-                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" id="btn-create-track" class="btn btn-sm btn-primary">Créer</button>
+            <%-- Bouton Retour --%>
+            <div class="mt-4">
+                <a href="${pageContext.request.contextPath}/composition/display" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-arrow-left"></i> Retour à la liste
+                </a>
             </div>
         </div>
     </div>

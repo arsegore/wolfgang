@@ -22,7 +22,7 @@ import wolfgang.models.User;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet("/composition")
+@WebServlet("/composition/view")
 public class CompositionServlet extends HttpServlet {
     private CompositionDAO compositionDAO;
     private TrackDAO trackDAO;
@@ -56,11 +56,18 @@ public class CompositionServlet extends HttpServlet {
             return;
         }
 
+        // Vérification de l'utilisateur et du type d'accès
         switch (comp.getAccessType()) {
             case "private" -> {
+
+                /*
+                 * Ajouter le cas ou c'est un collaborateur : doit quand meme pouvoir acceder
+                 * a la page
+                 */
+
                 User u = (User) session.getAttribute("user");
                 if (!comp.getOwner().equals(u)) {
-                    resp.sendRedirect(req.getContextPath() + "/home");
+                    resp.sendRedirect(req.getContextPath() + "/composition/display");
                     return;
                 }
             }
@@ -70,6 +77,7 @@ public class CompositionServlet extends HttpServlet {
 
         List<Track> tracks = trackDAO.findByComposition(id);
 
+        // Redirection
         req.setAttribute("composition", comp);
         req.setAttribute("tracksJson", buildTracksJson(tracks));
         req.setAttribute("instrumentsJson", buildInstrumentsJson(instrumentDAO.findAll()));
@@ -78,7 +86,66 @@ public class CompositionServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        doGet(req, resp);
+        HttpSession session = req.getSession();
+
+        // Récupération de la composition
+        int id = Integer.parseInt(req.getParameter("id"));
+        Composition comp = compositionDAO.findById(id);
+
+        if (comp == null) {
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        // Seul le propriétaire peut faire des modifications
+        User u = (User) session.getAttribute("user");
+        if (!comp.getOwner().equals(u)) {
+            resp.sendRedirect(req.getContextPath()+"/composition/view?id="+id);
+            return;
+        }
+
+        // Récupération et vérification des paramètres
+        String action = req.getParameter("action");
+
+        switch(action) {
+            case "updateAccess" -> {
+                String accessType = req.getParameter("accessType");
+                if (!accessType.equals("public") && !accessType.equals("private") && !accessType.equals("link")) {
+                    resp.sendRedirect(req.getContextPath()+"/composition/view?id="+id);
+                    return;
+                }
+                comp.setAccessType(accessType);
+            }
+            case "updateDescription" -> {
+                String description = req.getParameter("description");
+                comp.setDescription(description);
+            }
+            case "updateTempo" -> {
+                String paramTempo = req.getParameter("tempo");
+                if (paramTempo == null) {
+                    resp.sendRedirect(req.getContextPath()+"/composition/view?id="+id);
+                    return;
+                }
+                try {
+                    int tempo = Integer.parseInt(paramTempo);
+                    if (tempo < 20) tempo = 20;
+                    comp.setTempo(tempo);
+                } catch (NumberFormatException e) {
+                    resp.sendRedirect(req.getContextPath()+"/composition/view?id="+id);
+                    return;
+                }
+            }
+            default -> {
+                resp.sendRedirect(req.getContextPath()+"/composition/view?id="+id);
+                return;
+            }
+        }
+
+        // Mise à jour de la composition
+        compositionDAO.update(comp);
+
+        // Redirection
+        resp.sendRedirect(req.getContextPath()+"/composition/view?id="+id);
     }
 
     private String buildTracksJson(List<Track> tracks) {
