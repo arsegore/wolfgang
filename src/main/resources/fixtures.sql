@@ -1,11 +1,30 @@
 USE wolfgang_db;
 
+INSERT INTO instruments (id, name) VALUES
+(1,  'Piano'),
+(2,  'Guitare acoustique'),
+(3,  'Guitare électrique'),
+(4,  'Guitare basse'),
+(5,  'Batterie'),
+(6,  'Violon'),
+(7,  'Alto'),
+(8,  'Violoncelle'),
+(9,  'Contrebasse'),
+(10, 'Trompette'),
+(11, 'Trombone'),
+(12, 'Saxophone alto'),
+(13, 'Flûte traversière'),
+(14, 'Clarinette'),
+(15, 'Orgue'),
+(16, 'Synthétiseur'),
+(17, 'Harpe');
+
 # tous les users ont 'password' comme mdp
-INSERT INTO users (id, username, email, password, is_admin, created_at, updated_at) VALUES
-(1, 'asgore', 'asgore@underground.mt',       '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, '2026-01-10 09:00:00', '2026-01-10 09:00:00'),
-(2, 'toriel', 'toriel@ruins.underground',    '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 0, '2026-01-15 11:00:00', '2026-01-15 11:00:00'),
-(3, 'sans',   'sans@snowdin.underground',    '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 0, '2026-02-01 14:30:00', '2026-02-01 14:30:00'),
-(4, 'undyne', 'undyne@waterfall.underground','$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 0, '2026-02-20 08:15:00', '2026-02-20 08:15:00');
+INSERT INTO users (id, username, email, password, is_admin, is_verified, created_at, updated_at) VALUES
+(1, 'asgore', 'asgore@underground.mt',       '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 1, '2026-01-10 09:00:00', '2026-01-10 09:00:00'),
+(2, 'toriel', 'toriel@ruins.underground',    '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 0, 1, '2026-01-15 11:00:00', '2026-01-15 11:00:00'),
+(3, 'sans',   'sans@snowdin.underground',    '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 0, 1, '2026-02-01 14:30:00', '2026-02-01 14:30:00'),
+(4, 'undyne', 'undyne@waterfall.underground','$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 0, 1, '2026-02-20 08:15:00', '2026-02-20 08:15:00');
 
 INSERT INTO compositions (id, title, description, tempo, access_type, owner_id, created_at, updated_at) VALUES
 (1, 'Megalovania', 'tuturutum tututum', 200, 'public',  3, '2026-02-01 10:00:00', '2026-03-10 12:00:00'),

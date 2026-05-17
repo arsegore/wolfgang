@@ -44,7 +44,7 @@
                                 <p class="card-text text-truncate">${comp.description}</p>
                             </div>
                             <div class="card-footer bg-white border-0 p-3">
-                                <a href="Editor?id=${comp.id}" class="btn btn-primary w-100">Ouvrir</a>
+                                <a href="${pageContext.request.contextPath}/composition/view?id=${comp.id}" class="btn btn-primary w-100">Ouvrir</a>
                             </div>
                         </div>
                     </div>
@@ -72,7 +72,7 @@
                         <p class="small text-primary">Par : ${pub.owner.username}</p>
                     </div>
                     <div class="card-footer bg-transparent border-0 p-3">
-                        <a href="view?id=${pub.id}" class="btn btn-outline-secondary w-100">Consulter</a>
+                        <a href="${pageContext.request.contextPath}/composition/view?id=${pub.id}" class="btn btn-outline-secondary w-100">Consulter</a>
                     </div>
                 </div>
             </div>
