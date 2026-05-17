@@ -17,6 +17,12 @@ var totalBeats       = 32; // nb total de temps chargés par défaut
 var beatsPerBar      = 4; // nb de temps par mesure
 var currentTool      = 'draw'; // outil sélectionné par défaut
 
+var RESIZE_HANDLE_W = 6; // largeur (px) de la zone de redimensionnement sur le bord droit d'une note
+
+// état du redimensionnement en cours
+var resizing    = false;
+var resizeNote  = null;
+
 // player
 var playerMode        = 'track'; // 'track' | 'all'
 var playerPlaying     = false;
@@ -108,6 +114,18 @@ function initWebSocket() {
                     render();
                 }
             }
+        }
+        // une note a été redimensionnée
+        else if (response.action === 'NOTE_RESIZED') {
+            tracks.forEach(function(track) {
+                var note = track.notes.find(function(n) { return n.id === response.noteId; });
+                if (note) {
+                    note.duration = response.duration;
+                    totalBeats = computeTotalBeats();
+                    updateScrollbarLimits();
+                    render();
+                }
+            });
         }
         // une note a été supprimée
         else if (response.action === 'NOTE_DELETED') {
@@ -254,12 +272,23 @@ function getCanvasPos(e) {
 }
 
 function onMouseDown(e) {
-    var pos, beat, pitch, track, existing;
+    var pos, beat, pitch, track, existing, handle;
 
     if (!COMPOSITION_DATA.canEdit) return;
     pos = getCanvasPos(e);
     if (pos.x < KEY_W || pos.y < HEADER_H) return;
     if (tracks.length === 0) return;
+
+    // redimensionnement : bord droit d'une note
+    handle = findResizeHandle(pos);
+    if (handle) {
+        resizing   = true;
+        resizeNote = handle;
+        canvas.style.cursor = 'ew-resize';
+        document.addEventListener('mousemove', onResizeMouseMove);
+        document.addEventListener('mouseup', onResizeMouseUp);
+        return;
+    }
 
     beat  = Math.floor((pos.x - KEY_W + scrollX) / CELL_W);
     pitch = PITCH_MAX - Math.floor((pos.y - HEADER_H + scrollY) / CELL_H);
@@ -297,6 +326,7 @@ function onMouseMove(e) {
     pos = getCanvasPos(e);
     if (pos.x < KEY_W || pos.y < HEADER_H) {
         cursorInfo.textContent = '';
+        if (!resizing) canvas.style.cursor = '';
         return;
     }
 
@@ -305,7 +335,12 @@ function onMouseMove(e) {
 
     if (pitch < PITCH_MIN || pitch > PITCH_MAX || beat < 0) {
         cursorInfo.textContent = '';
+        if (!resizing) canvas.style.cursor = '';
         return;
+    }
+
+    if (!resizing && COMPOSITION_DATA.canEdit) {
+        canvas.style.cursor = findResizeHandle(pos) ? 'ew-resize' : '';
     }
 
     noteName  = NOTE_NAMES[pitch % 12];
@@ -329,6 +364,55 @@ function findNoteAt(track, beat, pitch) {
         }
     }
     return -1;
+}
+
+// Renvoie la note dont le bord droit est sous le curseur, ou null
+function findResizeHandle(pos) {
+    var i, n, nx, ny, noteRight, noteTop, noteBottom;
+    if (tracks.length === 0) return null;
+    var track = tracks[activeTrackIndex];
+    for (i = 0; i < track.notes.length; i++) {
+        n         = track.notes[i];
+        nx        = KEY_W + n.startBeat * CELL_W - scrollX;
+        ny        = HEADER_H + (PITCH_MAX - n.pitch) * CELL_H - scrollY;
+        noteRight = nx + n.duration * CELL_W - 2; // bord droit de la note dessinée
+        noteTop   = ny + 1;
+        noteBottom= ny + CELL_H - 2;
+        if (pos.x >= noteRight - RESIZE_HANDLE_W && pos.x <= noteRight + 2 &&
+            pos.y >= noteTop && pos.y <= noteBottom) {
+            return n;
+        }
+    }
+    return null;
+}
+
+function onResizeMouseMove(e) {
+    var rect, x, rawBeat, newRightEdge;
+    if (!resizing || !resizeNote) return;
+    rect        = canvas.getBoundingClientRect();
+    x           = e.clientX - rect.left;
+    rawBeat     = (x - KEY_W + scrollX) / CELL_W;
+    newRightEdge= Math.max(resizeNote.startBeat + 1, Math.round(rawBeat));
+    resizeNote.duration = newRightEdge - resizeNote.startBeat;
+    totalBeats  = computeTotalBeats();
+    updateScrollbarLimits();
+    render();
+}
+
+function onResizeMouseUp() {
+    if (!resizing || !resizeNote) return;
+    resizing = false;
+    document.removeEventListener('mousemove', onResizeMouseMove);
+    document.removeEventListener('mouseup', onResizeMouseUp);
+    canvas.style.cursor = '';
+
+    if (resizeNote.id > 0) {
+        ws.send(JSON.stringify({
+            action: 'RESIZE_NOTE',
+            data: { noteId: resizeNote.id, duration: resizeNote.duration }
+        }));
+    }
+    resizeNote = null;
 }
 
 // rendu principal
@@ -511,11 +595,19 @@ function drawNotes() {
 
         if (nx + nw < KEY_W || nx > w || ny + nh < HEADER_H || ny > h) continue;
 
-        ctx.fillStyle = color;
+        // Corps de la note
+        ctx.fillStyle = (resizing && resizeNote && n.id === resizeNote.id) ? lightenColor(color, 30) : color;
         ctx.fillRect(nx + 1, ny + 1, nw, nh);
 
+        // Reflet en haut
         ctx.fillStyle = light;
         ctx.fillRect(nx + 1, ny + 1, nw, 2);
+
+        // Poignée de redimensionnement sur le bord droit
+        if (COMPOSITION_DATA.canEdit && nw > RESIZE_HANDLE_W) {
+            ctx.fillStyle = 'rgba(255,255,255,0.25)';
+            ctx.fillRect(nx + nw - 3, ny + 2, 3, nh - 2);
+        }
     }
 }
 

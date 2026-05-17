@@ -76,6 +76,8 @@ public class EditorEndPoint {
                 handleNoteAdd(data, response);
             } else if ("DELETE_NOTE".equals(action)) {
                 handleNoteDelete(data, response);
+            } else if ("RESIZE_NOTE".equals(action)) {
+                handleNoteResize(data, response);
             } else if ("CREATE_TRACK".equals(action)) {
                 handleTrackCreate(data, compositionId, response);
             } else {
@@ -144,6 +146,17 @@ public class EditorEndPoint {
         response.addProperty("action", "NOTE_DELETED");
         response.addProperty("success", ok);
         response.addProperty("noteId", noteId);
+    }
+
+    private void handleNoteResize(JsonObject data, JsonObject response) {
+        int noteId = data.get("noteId").getAsInt();
+        float duration = Math.max(1f, data.get("duration").getAsFloat());
+        boolean ok = noteDAO.updateDuration(noteId, duration);
+
+        response.addProperty("action", "NOTE_RESIZED");
+        response.addProperty("success", ok);
+        response.addProperty("noteId", noteId);
+        response.addProperty("duration", duration);
     }
 
     private void handleTrackCreate(JsonObject data, int compositionId, JsonObject response) {
