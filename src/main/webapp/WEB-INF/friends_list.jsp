@@ -46,9 +46,13 @@
                                         <a class="btn btn-outline-dark btn-sm mt-2" href="${pageContext.request.contextPath}/profile?id=${request.friend.id}">
                                             <i class="bi bi-person me-1"></i>Profil
                                         </a>
-                                        <a class="btn btn-outline-danger btn-sm mt-2">
-                                            <i class="bi bi-person-dash me-1"></i>Annuler
-                                        </a>
+                                        <form method="post" action="${pageContext.request.contextPath}/friends/action">
+                                            <input type="hidden" name="action" value="cancel">
+                                            <input type="hidden" name="id" value="${user.id}">
+                                            <button class="btn btn-outline-danger btn-sm mt-2">
+                                                <i class="bi bi-person-dash me-1"></i>Annuler
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
@@ -77,12 +81,20 @@
                                         <a class="btn btn-outline-dark btn-sm mt-2" href="${pageContext.request.contextPath}/profile?id=${request.friend.id}">
                                             <i class="bi bi-person me-1"></i>Profil
                                         </a>
-                                        <a class="btn btn-outline-success btn-sm mt-2">
-                                            <i class="bi bi-check-circle me-1"></i>Accepter
-                                        </a>
-                                        <a class="btn btn-outline-danger btn-sm mt-2">
-                                            <i class="bi bi-trash me-1"></i>Refuser
-                                        </a>
+                                        <form method="post" action="${pageContext.request.contextPath}/friends/action">
+                                            <input type="hidden" name="action" value="accept">
+                                            <input type="hidden" name="id" value="${user.id}">
+                                            <button class="btn btn-outline-success btn-sm mt-2">
+                                                <i class="bi bi-check-circle me-1"></i>Accepter
+                                            </button>
+                                        </form>
+                                        <form method="post" action="${pageContext.request.contextPath}/friends/action">
+                                            <input type="hidden" name="action" value="refuse">
+                                            <input type="hidden" name="id" value="${user.id}">
+                                            <button class="btn btn-outline-danger btn-sm mt-2">
+                                                <i class="bi bi-trash me-1"></i>Refuser
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
@@ -111,9 +123,13 @@
                                         <a class="btn btn-outline-dark btn-sm mt-2" href="${pageContext.request.contextPath}/profile?id=${friendship.friend.id}">
                                             <i class="bi bi-person me-1"></i>Profil
                                         </a>
-                                        <a class="btn btn-outline-danger btn-sm mt-2">
-                                            <i class="bi bi-trash me-1"></i>Supprimer
-                                        </a>
+                                        <form method="post" action="${pageContext.request.contextPath}/friends/action">
+                                            <input type="hidden" name="action" value="delete">
+                                            <input type="hidden" name="id" value="${user.id}">
+                                            <button class="btn btn-outline-danger btn-sm mt-2">
+                                                <i class="bi bi-trash me-1"></i>Supprimer
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>

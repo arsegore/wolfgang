@@ -17,9 +17,6 @@
                     </c:when>
                     <c:otherwise>
                         Profil de ${user.username}
-                        <a class="btn btn-outline-dark btn-sm mt-2" href="${pageContext.request.contextPath}/friends/add?id=${user.id}">
-                            <i class="bi bi-person-plus me-1"></i>Ajouter en ami
-                        </a>
                     </c:otherwise>
                 </c:choose>
             </h1>
@@ -62,6 +59,17 @@
                     </div>
                 </div>
             </c:otherwise>
+        </c:choose>
+        <c:choose>
+            <c:when test="${!isOwnProfile}">
+                <form method="post" action="${pageContext.request.contextPath}/friends/action">
+                    <input type="hidden" name="action" value="add">
+                    <input type="hidden" name="id" value="${user.id}">
+                    <button class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-person-plus me-1"></i>Ajouter en ami
+                    </button>
+                </form>
+            </c:when>
         </c:choose>
     </div>
 </div>
