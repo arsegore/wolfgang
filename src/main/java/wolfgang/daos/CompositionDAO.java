@@ -26,12 +26,12 @@ public class CompositionDAO {
 
         try (
                 Connection con = DriverManager.getConnection(
-                        DatabaseConfig.DB_URL, 
-                        DatabaseConfig.DB_LOGIN, 
+                        DatabaseConfig.DB_URL,
+                        DatabaseConfig.DB_LOGIN,
                         DatabaseConfig.DB_PASSWD
                     );
                 PreparedStatement stmt = con.prepareStatement(
-                    sql, 
+                    sql,
                     Statement.RETURN_GENERATED_KEYS
                 )
         ) {
@@ -41,9 +41,11 @@ public class CompositionDAO {
             stmt.setInt(4, composition.getOwner().getId());
             stmt.executeUpdate();
 
+            // Récupération de l'id généré
             ResultSet rs = stmt.getGeneratedKeys();
             if (rs.next()) return rs.getInt(1);
             else return -1;
+
         } catch (SQLException e) {
             e.printStackTrace();
             return -1;
@@ -195,6 +197,10 @@ public class CompositionDAO {
 
     /**
      * @deprecated Utiliser findOwned() ou findMemberships() selon le cas.
+     * Retourne toutes les compositions dont l'utilisateur est membre
+     *
+     * @param userId
+     * @return liste des compositions
      */
     public List<Composition> findByUser(int userId) {
         List<Composition> compositions = new ArrayList<>();
@@ -204,7 +210,8 @@ public class CompositionDAO {
                 FROM compositions c
                 JOIN users u ON c.owner_id = u.id
                 JOIN composition_members cm ON c.id = cm.composition_id
-                WHERE cm.user_id = ?;
+                WHERE cm.user_id = ?
+                ORDER BY c.created_at DESC;
                 """;
 
         try (
@@ -218,9 +225,55 @@ public class CompositionDAO {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return compositions;
     }
 
+    /**
+     * @deprecated Utiliser findOwned() ou findMemberships() selon le cas.
+     * Retourne toutes les compositions dont l'utilisateur est membre
+     *
+     * @param userId
+     * @param limit
+     * @return liste des compositions
+     */
+    public List<Composition> findByUser(int userId, int limit) {
+        List<Composition> compositions = new ArrayList<>();
+        String sql = """
+                SELECT c.*, u.id as u_id, u.username, u.email, u.password,
+                       u.created_at as u_created_at, u.updated_at as u_updated_at
+                FROM compositions c
+                JOIN users u ON c.owner_id = u.id
+                JOIN composition_members cm ON c.id = cm.composition_id
+                WHERE cm.user_id = ?
+                ORDER BY c.created_at DESC
+                LIMIT ?;
+                """;
+
+        try (
+                Connection con = DriverManager.getConnection(
+                        DatabaseConfig.DB_URL, DatabaseConfig.DB_LOGIN, DatabaseConfig.DB_PASSWD);
+                PreparedStatement stmt = con.prepareStatement(sql)
+        ) {
+            stmt.setInt(1, userId);
+            stmt.setInt(2, limit);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) compositions.add(buildComposition(rs));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return compositions;
+    }
+
+    /**
+     * Ajoute un membre à une composition
+     *
+     * @param compositionId
+     * @param userId
+     * @param role
+     * @return vrai si l'insertion a réussi, faux sinon
+     */
     public boolean addMember(int compositionId, int userId, String role) {
         String sql = """
                 INSERT INTO composition_members (composition_id, user_id, role)
@@ -243,6 +296,14 @@ public class CompositionDAO {
         }
     }
 
+    /**
+     * Met à jour le rôle d'un membre
+     *
+     * @param compositionId
+     * @param userId
+     * @param role
+     * @return vrai si la mise à jour a réussi, faux sinon
+     */
     public boolean updateRole(int compositionId, int userId, String role) {
         String sql = """
                 UPDATE composition_members
@@ -265,6 +326,13 @@ public class CompositionDAO {
         }
     }
 
+    /**
+     * Retire un membre d'une composition
+     *
+     * @param compositionId
+     * @param userId
+     * @return vrai si la suppression a réussi, faux sinon
+     */
     public boolean removeMember(int compositionId, int userId) {
         String sql = """
                 DELETE FROM composition_members
@@ -285,6 +353,12 @@ public class CompositionDAO {
         }
     }
 
+    /**
+     * Retourne tous les membres d'une composition avec leur rôle
+     *
+     * @param compositionId
+     * @return map user -> role
+     */
     public Map<User, String> findMembers(int compositionId) {
         Map<User, String> members = new LinkedHashMap<>();
         String sql = """
@@ -320,7 +394,10 @@ public class CompositionDAO {
         return members;
     }
 
-    public List<Composition> findPublic() {
+    /**
+     * @return L'ensemble des compositions publiques
+     */
+    public  List<Composition> findPublic() {
         List<Composition> compositions = new ArrayList<>();
         String sql = """
                 SELECT c.*, u.id as u_id, u.username, u.email, u.password,
@@ -328,7 +405,7 @@ public class CompositionDAO {
                 FROM compositions c
                 JOIN users u ON c.owner_id = u.id
                 WHERE c.access_type = 'public'
-                ORDER BY c.id DESC;
+                ORDER BY c.created_at DESC;
                 """;
 
         try (
@@ -341,9 +418,106 @@ public class CompositionDAO {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return compositions;
     }
 
+    /**
+     * @param limit le nombre de compositions à renvoyer
+     * @return Les compositions publiques selon la limite
+     */
+    public  List<Composition> findPublic(int limit) {
+        List<Composition> compositions = new ArrayList<>();
+        String sql = """
+					SELECT c.*, u.id as u_id, u.username, u.email, u.password,
+					       u.created_at as u_created_at, u.updated_at as u_updated_at
+					FROM compositions c
+					JOIN users u ON c.owner_id = u.id
+					WHERE c.access_type = 'public'
+					ORDER BY c.created_at DESC
+                    LIMIT ?;
+					""";
+
+        try (
+                Connection con = DriverManager.getConnection(
+                        DatabaseConfig.DB_URL,
+                        DatabaseConfig.DB_LOGIN,
+                        DatabaseConfig.DB_PASSWD);
+                PreparedStatement stmt = con.prepareStatement(sql);
+        ) {
+
+            stmt.setInt(1, limit);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) compositions.add(buildComposition(rs));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return compositions;
+    }
+
+    /**
+     * @param friendsList la liste d'amis
+     * @param limit nombre de compositions à récupérer
+     * @return L'ensemble des compositions publiques de la liste d'amis
+     */
+    public List<Composition> findFriendsComposition(ArrayList<User> friendsList, int limit) {
+        List<Composition> compositions = new ArrayList<>();
+
+        // Requete qui récupère la dernière composition d'un seul ami
+        String sql = """
+					SELECT c.*, u.id as u_id, u.username, u.email, u.password,
+					       u.created_at as u_created_at, u.updated_at as u_updated_at
+					FROM compositions c
+					JOIN users u ON c.owner_id = u.id
+					WHERE c.owner_id = ?
+					AND c.access_type = 'public'
+					ORDER BY c.created_at DESC
+                    LIMIT 1;
+					""";
+
+        if (friendsList == null || friendsList.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        try (
+                Connection con = DriverManager.getConnection(
+                        DatabaseConfig.DB_URL,
+                        DatabaseConfig.DB_LOGIN,
+                        DatabaseConfig.DB_PASSWD
+                );
+
+                PreparedStatement stmt = con.prepareStatement(sql);
+        ) {
+
+
+            for (User friend : friendsList) {
+
+                stmt.setInt(1, friend.getId());
+
+                ResultSet rs = stmt.executeQuery();
+
+                while (rs.next()) compositions.add(buildComposition(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        compositions.sort((a, b) ->
+                b.getCreatedAt().compareTo(a.getCreatedAt())
+        );
+
+        if (compositions.size() > limit) {
+            return compositions.subList(0, limit);
+        }
+
+        return compositions;
+    }
+
+    /**
+     * @return La liste complete des compositions
+     */
     public List<Composition> findAll() {
         List<Composition> compositions = new ArrayList<>();
         String sql = """
@@ -351,7 +525,7 @@ public class CompositionDAO {
                        u.created_at as u_created_at, u.updated_at as u_updated_at
                 FROM compositions c
                 JOIN users u ON c.owner_id = u.id
-                ORDER BY c.id;
+                ORDER BY c.created_at DESC;
                 """;
 
         try (
