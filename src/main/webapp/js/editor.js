@@ -256,6 +256,7 @@ function getCanvasPos(e) {
 function onMouseDown(e) {
     var pos, beat, pitch, track, existing;
 
+    if (!COMPOSITION_DATA.canEdit) return;
     pos = getCanvasPos(e);
     if (pos.x < KEY_W || pos.y < HEADER_H) return;
     if (tracks.length === 0) return;
