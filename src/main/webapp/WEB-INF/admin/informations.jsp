@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="wolfgang.models.Composition, java.util.List" %>
+<%@ page import="wolfgang.models.Information, java.util.List" %>
 
 <jsp:include page="../include/header.jsp">
     <jsp:param name="title" value="Admin — Actualités — Wolfgang"/>
@@ -15,6 +15,26 @@
             <h1 class="h3 mb-0">Actualités</h1>
         </div>
 
+        <%-- Formulaire de création --%>
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-semibold">Nouvelle actualité</div>
+            <div class="card-body">
+                <form method="post" action="${pageContext.request.contextPath}/admin/informations">
+                    <input type="hidden" name="action" value="create">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Titre <span class="text-danger">*</span></label>
+                        <input type="text" id="title" name="title" class="form-control" required maxlength="255">
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Contenu</label>
+                        <textarea id="description" name="description" class="form-control" rows="4"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Publier</button>
+                </form>
+            </div>
+        </div>
+
+        <%-- Liste des actualités --%>
         <div class="card shadow-sm">
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
@@ -22,46 +42,34 @@
                         <tr>
                             <th>#</th>
                             <th>Titre</th>
-                            <th>Propriétaire</th>
-                            <th>Tempo</th>
-                            <th>Accès</th>
-                            <th>Créée le</th>
+                            <th>Contenu</th>
+                            <th>Publiée le</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <% List<Composition> compositions = (List<Composition>) request.getAttribute("compositions"); %>
-                        <% if (compositions.isEmpty()) { %>
+                        <% List<Information> informations = (List<Information>) request.getAttribute("informations"); %>
+                        <% if (informations.isEmpty()) { %>
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-4">Aucune composition.</td>
+                            <td colspan="5" class="text-center text-muted py-4">Aucune actualité.</td>
                         </tr>
                         <% } %>
-                        <% for (Composition c : compositions) { %>
+                        <% for (Information info : informations) { %>
                         <tr>
-                            <td class="text-muted"><%= c.getId() %></td>
-                            <td><strong><%= c.getTitle() %></strong></td>
-                            <td><%= c.getOwner().getUsername() %></td>
-                            <td><%= c.getTempo() %> BPM</td>
-                            <td>
-                                <%
-                                    String accessType = c.getAccessType();
-                                    String badgeClass = "public".equals(accessType) ? "bg-success"
-                                                      : "link".equals(accessType)   ? "bg-info text-dark"
-                                                                                    : "bg-secondary";
-                                    String accessLabel = "public".equals(accessType) ? "Public"
-                                                       : "link".equals(accessType)   ? "Lien"
-                                                                                     : "Privé";
-                                %>
-                                <span class="badge <%= badgeClass %>"><%= accessLabel %></span>
+                            <td class="text-muted"><%= info.getId() %></td>
+                            <td><strong><%= info.getTitle() %></strong></td>
+                            <td class="text-muted small" style="max-width: 400px;">
+                                <%= info.getDescription() != null && info.getDescription().length() > 100
+                                    ? info.getDescription().substring(0, 100) + "…"
+                                    : info.getDescription() %>
                             </td>
-                            <td class="text-muted small"><%= c.getCreatedAt() != null ? c.getCreatedAt().toLocalDate() : "" %></td>
+                            <td class="text-muted small"><%= info.getCreatedAt() != null ? info.getCreatedAt().toLocalDate() : "" %></td>
                             <td>
-                                <a href="${pageContext.request.contextPath}/admin/compositions/edit?id=<%= c.getId() %>"
-                                   class="btn btn-sm btn-outline-primary me-1">Modifier</a>
-                                <form method="post" action="${pageContext.request.contextPath}/admin/compositions"
+                                <form method="post" action="${pageContext.request.contextPath}/admin/informations"
                                       class="d-inline"
-                                      onsubmit="return confirm('Supprimer « <%= c.getTitle() %> » ?');">
-                                    <input type="hidden" name="id" value="<%= c.getId() %>">
+                                      onsubmit="return confirm('Supprimer « <%= info.getTitle() %> » ?');">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="id" value="<%= info.getId() %>">
                                     <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
                                 </form>
                             </td>

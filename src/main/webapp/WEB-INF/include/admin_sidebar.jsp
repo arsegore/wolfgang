@@ -17,5 +17,11 @@
                 Compositions
             </a>
         </li>
+        <li class="nav-item">
+            <a href="${pageContext.request.contextPath}/admin/informations"
+               class="nav-link <%= "informations".equals(section) ? "active" : "text-white-50" %>">
+                Actualités
+            </a>
+        </li>
     </ul>
 </nav>
