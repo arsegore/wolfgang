@@ -144,7 +144,7 @@
 
             <div id="chat-container" class="card shadow-sm p-3">
                 <h6 class="card-title text-primary mb-2"><i class="bi bi-chat-dots-fill me-1"></i> Discussion de groupe</h6>
-                <div id="messages" style="height: 180px; overflow-y: scroll; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; background: #fafafa; font-size: 0.9rem; border-radius: 4px;">
+                <div id="messages" class="wf-chat-messages">
                 </div>
                 <div class="input-group input-group-sm">
                     <input type="text" id="messageInput" class="form-control" placeholder="Votre message...">
