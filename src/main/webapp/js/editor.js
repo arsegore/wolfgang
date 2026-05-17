@@ -1,34 +1,58 @@
-var KEY_W       = 62;
-var HEADER_H    = 28;
-var CELL_W      = 40;
-var CELL_H      = 14;
-var PITCH_MIN   = 24;
-var PITCH_MAX   = 107;
-var PITCHES     = PITCH_MAX - PITCH_MIN + 1;
+var KEY_W       = 62; // largeur du clavier à gauche
+var HEADER_H    = 28; // hauteur de la règle des temps en haut
+var CELL_W      = 40; // largeur colonne (d'1 temps du coup)
+var CELL_H      = 14; // hauteur de ligne (= 1 demi-ton)
+var PITCH_MIN   = 24; // note la plus basse, C1 
+var PITCH_MAX   = 107; // note la plus haute, B7 
+var PITCHES     = PITCH_MAX - PITCH_MIN + 1; // nb de notes
 
 var NOTE_NAMES      = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 var BLACK_SEMITONES = [1, 3, 6, 8, 10];
 
-var tracks           = [];
-var activeTrackIndex = 0;
-var scrollX          = 0;
-var scrollY          = 0;
-var totalBeats       = 32;
-var beatsPerBar      = 4;
-var currentTool      = 'draw';
+var tracks           = []; // alimenté ddepuis le json
+var activeTrackIndex = 0; // la track choisie
+var scrollX          = 0; // val par défaut du scroll horizontal
+var scrollY          = 0; // idem vertical
+var totalBeats       = 32; // nb total de temps chargés par défaut
+var beatsPerBar      = 4; // nb de temps par mesure
+var currentTool      = 'draw'; // outil sélectionné par défaut
 
-var canvas, ctx;
+// player
+var playerMode        = 'track'; // 'track' | 'all'
+var playerPlaying     = false;
+var playerBeat        = 0;       // position courante en temps (float)
+var playerBeatAtStart = 0;       // position au moment du dernier play
+var playerAudioCtx    = null;
+var playerAudioStart  = 0;       // audioCtx.currentTime au moment du play
+var playerSources     = [];      // oscillateurs schedulés
+var playerRAF         = null;
+
+var canvas, ctx; // pour dessiner...
 var scrollXInput, scrollYInput;
 var tabsContainer, cursorInfo;
 
-// Instance globale de la WebSocket MIDI
-var midiSocket;
+var ws; // websocket de l'éditeur
+
+function computeTotalBeats() {
+    var max, i, j, t, n;
+    max = 32;
+    for (i = 0; i < tracks.length; i++) {
+        t = tracks[i];
+        for (j = 0; j < t.notes.length; j++) {
+            n   = t.notes[j];
+            max = Math.max(max, n.startBeat + n.duration + beatsPerBar);
+        }
+    }
+    return max;
+}
 
 // démarrage
 function initEditor(tracksData, bpb) {
     tracks      = tracksData || [];
     beatsPerBar = bpb || 4;
+    totalBeats  = computeTotalBeats();
 
+    // récup des éléments html
     canvas        = document.getElementById('midi-canvas');
     ctx           = canvas.getContext('2d');
     scrollXInput  = document.getElementById('scroll-x');
@@ -38,39 +62,38 @@ function initEditor(tracksData, bpb) {
 
     resizeCanvas();
 
-    // on centre sur C4
+    // on centre verticalement sur C4
     var c4Row = PITCH_MAX - 60;
     scrollY = Math.max(0, c4Row * CELL_H - Math.floor((canvas.height - HEADER_H) / 2));
 
-    // --- INITIALISATION DE LA WEBSOCKET FULL DUPLEX ---
-    initMidiWebSocket();
+    initWebSocket();
 
+    // création des éléments puis rendu
     buildTrackTabs();
     updateScrollbarLimits();
     syncScrollbars();
     setupEvents();
+    initPlayer();
     render();
 }
 
-// Initialisation de la connexion temps réel
-function initMidiWebSocket() {
-    // On cible le Endpoint configuré côté Java (en minuscules pour pallier la casse)
-    midiSocket = new WebSocket("ws://" + window.location.host + COMPOSITION_DATA.contextPath + '/editeur/' + COMPOSITION_DATA.id);
+// initialisation de la ws
+function initWebSocket() {
+    ws = new WebSocket("ws://" + window.location.host + COMPOSITION_DATA.contextPath + '/editeur/' + COMPOSITION_DATA.id);
 
-    midiSocket.onopen = function() {
-        console.log("Éditeur connecté en temps réel sur la partition #" + COMPOSITION_DATA.id);
+    ws.onopen = function() {
+        console.log("WS connected for composition #" + COMPOSITION_DATA.id);
     };
 
-    midiSocket.onmessage = function(event) {
+    ws.onmessage = function(event) {
         var response = JSON.parse(event.data);
         if (!response.success) return;
 
-        // Traitement des notifications de broadcast du serveur
+        // une note a été ajt
         if (response.action === 'NOTE_ADDED') {
-            // On cherche la piste concernée
             var targetTrack = tracks.find(function(t) { return t.id === response.trackId; });
             if (targetTrack) {
-                // On évite les doublons graphiques
+                // check pour éviter les doublons (au moins côté client)
                 var exists = targetTrack.notes.some(function(n) { return n.id === response.id; });
                 if (!exists) {
                     targetTrack.notes.push({
@@ -80,38 +103,38 @@ function initMidiWebSocket() {
                         duration: response.duration,
                         velocity: response.velocity
                     });
-                    if (response.startBeat + 1 > totalBeats) {
-                        totalBeats = response.startBeat + 1 + beatsPerBar;
-                        updateScrollbarLimits();
-                    }
+                    totalBeats = computeTotalBeats();
+                    updateScrollbarLimits();
                     render();
                 }
             }
         }
+        // une note a été supprimée
         else if (response.action === 'NOTE_DELETED') {
-            // On cherche la note dans toutes les pistes pour la supprimer
             tracks.forEach(function(track) {
                 var index = track.notes.findIndex(function(n) { return n.id === response.noteId; });
                 if (index >= 0) {
                     track.notes.splice(index, 1);
+                    totalBeats = computeTotalBeats();
+                    updateScrollbarLimits();
                     render();
                 }
             });
         }
+        // une piste a été ajt
         else if (response.action === 'TRACK_CREATED') {
-            // Une nouvelle piste a été ajoutée par nous ou un collaborateur
             tracks.push(response.track);
             buildTrackTabs();
             render();
         }
     };
 
-    midiSocket.onerror = function(error) {
-        console.error("Erreur WebSocket Éditeur : ", error);
+    ws.onerror = function(error) {
+        console.error("Erreur communication sur l'éditeur : ", error);
     };
 
-    midiSocket.onclose = function() {
-        console.log("Connexion de l'éditeur perdue.");
+    ws.onclose = function() {
+        console.log("Connexion à l'éditeur perdue.");
     };
 }
 
@@ -245,19 +268,16 @@ function onMouseDown(e) {
     track    = tracks[activeTrackIndex];
     existing = findNoteAt(track, beat, pitch);
 
-    // Changement d'approche ici : plus de manipulation locale directe du tableau, on délègue à la WebSocket
     if (existing >= 0) {
         var note = track.notes[existing];
         if (note.id > 0) {
-            // Émission de la suppression via WS
-            midiSocket.send(JSON.stringify({
+            ws.send(JSON.stringify({
                 action: 'DELETE_NOTE',
                 data: { noteId: note.id }
             }));
         }
     } else if (currentTool === 'draw') {
-        // Émission de l'ajout via WS
-        midiSocket.send(JSON.stringify({
+        ws.send(JSON.stringify({
             action: 'ADD_NOTE',
             data: {
                 trackId: track.id,
@@ -352,6 +372,8 @@ function render() {
         ctx.fillText('Aucune piste — ajoutez-en une pour commencer', canvas.width / 2, canvas.height / 2);
         ctx.textAlign = 'left';
     }
+
+    drawPlayhead();
 }
 
 // dessine la grille en fond
@@ -496,7 +518,7 @@ function drawNotes() {
     }
 }
 
-// Boîte de dialogue pour ajouter une piste
+// modal d'ajout d'une piste
 function onAddTrackClick() {
     var instruments, sel, i, opt;
 
@@ -514,7 +536,7 @@ function onAddTrackClick() {
     new bootstrap.Modal(document.getElementById('modal-new-track')).show();
 }
 
-// Soumission de la création d'une piste
+// création d'une piste
 function onCreateTrack() {
     var name, instrumentId, color;
 
@@ -528,7 +550,7 @@ function onCreateTrack() {
     }
 
     // Émission de la création de la piste via WS
-    midiSocket.send(JSON.stringify({
+    ws.send(JSON.stringify({
         action: 'CREATE_TRACK',
         data: {
             name: name,
@@ -552,8 +574,202 @@ function lightenColor(hex, amount) {
     return '#' + pad2(r.toString(16)) + pad2(g.toString(16)) + pad2(b.toString(16));
 }
 
-// (Les anciennes fonctions saveNote et deleteNote basées sur XHR ont été nettoyées)
-
 function pad2(s) {
     return s.length === 1 ? '0' + s : s;
+}
+
+// ------
+// partie lecteur
+
+function initPlayer() {
+    document.getElementById('player-play').addEventListener('click', onPlayerPlay);
+    document.getElementById('player-stop').addEventListener('click', onPlayerStop);
+    document.getElementById('player-mode').addEventListener('click', onPlayerMode);
+    playerUpdateUI();
+}
+
+function onPlayerPlay() {
+    if (playerPlaying) { playerPause(); } else { playerPlay(); }
+}
+
+function onPlayerStop() {
+    playerStop();
+}
+
+function onPlayerMode() {
+    playerMode = (playerMode === 'track') ? 'all' : 'track';
+    playerUpdateUI();
+}
+
+function playerPlay() {
+    if (tracks.length === 0) return;
+
+    if (!playerAudioCtx) {
+        playerAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (playerAudioCtx.state === 'suspended') {
+        playerAudioCtx.resume();
+    }
+
+    playerPlaying     = true;
+    playerBeatAtStart = playerBeat;
+    playerAudioStart  = playerAudioCtx.currentTime;
+
+    playerScheduleNotes();
+    playerUpdateUI();
+    playerRAF = requestAnimationFrame(playerTick);
+}
+
+function playerPause() {
+    playerPlaying = false;
+    if (playerRAF) { cancelAnimationFrame(playerRAF); playerRAF = null; }
+    playerSources.forEach(function(s) { try { s.stop(0); } catch(e) {} });
+    playerSources = [];
+    playerUpdateUI();
+}
+
+function playerStop() {
+    playerPause();
+    playerBeat = 0;
+    playerUpdateUI();
+    render();
+}
+
+function playerTick() {
+    var elapsed, beatsPerSec, maxBeat;
+
+    if (!playerPlaying) return;
+
+    beatsPerSec = COMPOSITION_DATA.tempo / 60;
+    elapsed     = playerAudioCtx.currentTime - playerAudioStart;
+    playerBeat  = playerBeatAtStart + elapsed * beatsPerSec;
+    maxBeat     = playerComputeMaxBeat();
+
+    if (playerBeat >= maxBeat) {
+        playerBeat = 0;
+        playerStop();
+        return;
+    }
+
+    playerScrollToFollow();
+    playerUpdateUI();
+    render();
+    playerRAF = requestAnimationFrame(playerTick);
+}
+
+function playerScheduleNotes() {
+    var tracksToPlay, beatsPerSec, delay, dur, freq, osc, gain, t0, vel;
+
+    tracksToPlay = (playerMode === 'all') ? tracks : [tracks[activeTrackIndex]];
+    beatsPerSec  = COMPOSITION_DATA.tempo / 60;
+
+    tracksToPlay.forEach(function(track) {
+        track.notes.forEach(function(note) {
+            if (note.startBeat + note.duration <= playerBeat) return;
+
+            delay = Math.max(0, (note.startBeat - playerBeat) / beatsPerSec);
+            dur   = note.duration / beatsPerSec;
+            freq  = 440 * Math.pow(2, (note.pitch - 69) / 12);
+            vel   = ((note.velocity || 100) / 127) * 0.25;
+
+            osc  = playerAudioCtx.createOscillator();
+            gain = playerAudioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(playerAudioCtx.destination);
+
+            osc.type            = 'triangle';
+            osc.frequency.value = freq;
+
+            t0 = playerAudioCtx.currentTime + delay;
+            gain.gain.setValueAtTime(0, t0);
+            gain.gain.linearRampToValueAtTime(vel, t0 + 0.01);
+            gain.gain.setValueAtTime(vel, t0 + Math.max(0.02, dur - 0.06));
+            gain.gain.linearRampToValueAtTime(0, t0 + dur);
+
+            osc.start(t0);
+            osc.stop(t0 + dur);
+            playerSources.push(osc);
+        });
+    });
+}
+
+function playerComputeMaxBeat() {
+    var max, tracksToPlay;
+
+    max          = 0;
+    tracksToPlay = (playerMode === 'all') ? tracks : [tracks[activeTrackIndex]];
+    tracksToPlay.forEach(function(track) {
+        track.notes.forEach(function(note) {
+            max = Math.max(max, note.startBeat + note.duration);
+        });
+    });
+    return max || totalBeats;
+}
+
+function playerScrollToFollow() {
+    var px, visW, maxX;
+
+    px   = KEY_W + playerBeat * CELL_W - scrollX;
+    visW = canvas.width - KEY_W;
+
+    if (px > canvas.width - CELL_W * 4) {
+        maxX    = Math.max(0, totalBeats * CELL_W - visW);
+        scrollX = Math.min(maxX, playerBeat * CELL_W - visW / 2);
+        syncScrollbars();
+    } else if (px < KEY_W) {
+        scrollX = Math.max(0, playerBeat * CELL_W - CELL_W);
+        syncScrollbars();
+    }
+}
+
+function playerUpdateUI() {
+    var playBtn, modeBtn, bar, beat, timeEl;
+
+    playBtn = document.getElementById('player-play');
+    modeBtn = document.getElementById('player-mode');
+    timeEl  = document.getElementById('player-time');
+
+    playBtn.innerHTML = playerPlaying
+        ? '<i class="bi bi-pause-fill"></i>'
+        : '<i class="bi bi-play-fill"></i>';
+    playBtn.classList.toggle('active', playerPlaying);
+
+    if (playerMode === 'all') {
+        modeBtn.innerHTML = '<i class="bi bi-music-note-list"></i> Toutes les pistes';
+        modeBtn.classList.add('all-mode');
+    } else {
+        modeBtn.innerHTML = '<i class="bi bi-music-note"></i> Piste active';
+        modeBtn.classList.remove('all-mode');
+    }
+
+    bar  = Math.floor(playerBeat / beatsPerBar) + 1;
+    beat = Math.floor(playerBeat % beatsPerBar) + 1;
+    if (timeEl) timeEl.textContent = 'M' + bar + ' T' + beat;
+}
+
+function drawPlayhead() {
+    var x;
+
+    if (!playerPlaying && playerBeat === 0) return;
+
+    x = KEY_W + playerBeat * CELL_W - scrollX;
+    if (x < KEY_W || x > canvas.width) return;
+
+    ctx.save();
+
+    ctx.strokeStyle = 'rgba(255, 80, 80, 0.9)';
+    ctx.lineWidth   = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x, HEADER_H);
+    ctx.lineTo(x, canvas.height);
+    ctx.stroke();
+
+    ctx.fillStyle = '#ff5050';
+    ctx.beginPath();
+    ctx.moveTo(x - 5, 0);
+    ctx.lineTo(x + 5, 0);
+    ctx.lineTo(x, HEADER_H);
+    ctx.fill();
+
+    ctx.restore();
 }

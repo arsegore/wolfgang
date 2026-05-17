@@ -65,6 +65,19 @@
 
         <input type="range" id="scroll-x" min="0" max="1000" value="0">
 
+        <div class="player-bar">
+            <button id="player-play" class="player-btn" title="Lecture / Pause">
+                <i class="bi bi-play-fill"></i>
+            </button>
+            <button id="player-stop" class="player-btn" title="Arrêt">
+                <i class="bi bi-stop-fill"></i>
+            </button>
+            <button id="player-mode" class="player-btn" title="Mode de lecture">
+                <i class="bi bi-music-note"></i> Piste active
+            </button>
+            <span id="player-time" class="player-time">M1 T1</span>
+        </div>
+
         <div class="editor-toolbar">
             <button id="tool-draw" class="btn btn-sm btn-primary active">
                 <i class="bi bi-pencil-fill"></i> Crayon
@@ -120,32 +133,20 @@
                 </div>
             </div>
 
-            <%-- Pistes de la composition --%>
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-                    <h5 class="mb-0 text-primary">Pistes</h5>
-                    <c:if test="${sessionScope.user.id == composition.owner.id}">
-                        <a href="${pageContext.request.contextPath}/jspQuoiMettre?compositionId=${composition.id}" class="btn btn-outline-primary btn-sm">
-                            Ajouter
-                        </a>
-                    </c:if>
+        <%-- chat --%>
+            <div id="chat-config"
+                data-pseudo="${sessionScope.user.username}"
+                data-context="${pageContext.request.contextPath}"
+                class="d-none">
+            </div>
+
+            <div id="chat-container" class="card shadow-sm p-3">
+                <h6 class="card-title text-primary mb-2"><i class="bi bi-chat-dots-fill me-1"></i> Discussion de groupe</h6>
+                <div id="messages" style="height: 180px; overflow-y: scroll; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; background: #fafafa; font-size: 0.9rem; border-radius: 4px;">
                 </div>
-                <div class="card-body">
-                    <c:choose>
-                        <c:when test="${empty composition.tracks}">
-                            <p class="text-muted">Aucune piste enregistrée pour cette composition.</p>
-                        </c:when>
-                        <c:otherwise>
-                            <ul class="list-group list-group-flush">
-                                <c:forEach var="track" items="${composition.tracks}">
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span><i class="bi bi-music-note-beamed me-2"></i> ${track.name}</span>
-                                        <span class="badge bg-light text-dark border">Instrument #${track.instrumentId}</span>
-                                    </li>
-                                </c:forEach>
-                            </ul>
-                        </c:otherwise>
-                    </c:choose>
+                <div class="input-group input-group-sm">
+                    <input type="text" id="messageInput" class="form-control" placeholder="Votre message...">
+                    <button class="btn btn-primary" onclick="send()">Envoyer</button>
                 </div>
             </div>
         </div>
@@ -166,12 +167,15 @@
                                 <strong>Tempo : </strong>
                                 <c:choose>
                                     <c:when test="${sessionScope.user.id == composition.owner.id}">
+
                                         <form method="post" action="${pageContext.request.contextPath}/composition/view?id=${composition.id}" class="d-flex align-items-center gap-2">
                                             <input type="hidden" name="action" value="updateTempo"/>
                                             <input type="number" name="tempo" value="${composition.tempo}" min="20" class="form-control form-control-sm" style="width: 120px;"/>
+
                                             <button type="submit" class="btn btn-success btn-sm">Valider</button>
                                         </form>
                                     </c:when>
+
                                     <c:otherwise>
                                         <span class="badge bg-info text-dark">${composition.tempo} BPM</span>
                                     </c:otherwise>
@@ -256,6 +260,36 @@
     </div>
 </div>
 
+<%-- Modal création de piste --%>
+<div class="modal fade" id="modal-new-track" tabindex="-1" aria-labelledby="modal-new-track-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-new-track-label">Nouvelle piste</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="new-track-name" class="form-label">Nom</label>
+                    <input type="text" class="form-control" id="new-track-name" placeholder="Ex : Mélodie, Basse…">
+                </div>
+                <div class="mb-3">
+                    <label for="new-track-instrument" class="form-label">Instrument</label>
+                    <select class="form-select" id="new-track-instrument"></select>
+                </div>
+                <div class="mb-3">
+                    <label for="new-track-color" class="form-label">Couleur</label>
+                    <input type="color" class="form-control form-control-color" id="new-track-color" value="#4a9eff">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="btn-create-track">Créer la piste</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     var COMPOSITION_DATA = {
         id: ${composition.id},
@@ -269,9 +303,12 @@
 <script src="${pageContext.request.contextPath}/js/Client.js"></script>
 <script src="${pageContext.request.contextPath}/js/import.js"></script>
 <script>
+
     window.addEventListener('load', function () {
         initEditor(COMPOSITION_DATA.tracks, 4);
     });
 </script>
+<script src="${pageContext.request.contextPath}/js/editor.js"></script>
+<script src="${pageContext.request.contextPath}/js/chat.js"></script>
 
 <%@include file="include/footer.jsp"%>
