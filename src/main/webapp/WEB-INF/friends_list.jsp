@@ -48,7 +48,7 @@
                                         </a>
                                         <form method="post" action="${pageContext.request.contextPath}/friends/action">
                                             <input type="hidden" name="action" value="cancel">
-                                            <input type="hidden" name="id" value="${user.id}">
+                                            <input type="hidden" name="id" value="${request.friend.id}">
                                             <button class="btn btn-outline-danger btn-sm mt-2">
                                                 <i class="bi bi-person-dash me-1"></i>Annuler
                                             </button>
@@ -83,14 +83,14 @@
                                         </a>
                                         <form method="post" action="${pageContext.request.contextPath}/friends/action">
                                             <input type="hidden" name="action" value="accept">
-                                            <input type="hidden" name="id" value="${user.id}">
+                                            <input type="hidden" name="id" value="${request.friend.id}">
                                             <button class="btn btn-outline-success btn-sm mt-2">
                                                 <i class="bi bi-check-circle me-1"></i>Accepter
                                             </button>
                                         </form>
                                         <form method="post" action="${pageContext.request.contextPath}/friends/action">
                                             <input type="hidden" name="action" value="refuse">
-                                            <input type="hidden" name="id" value="${user.id}">
+                                            <input type="hidden" name="id" value="${request.friend.id}">
                                             <button class="btn btn-outline-danger btn-sm mt-2">
                                                 <i class="bi bi-trash me-1"></i>Refuser
                                             </button>
@@ -125,7 +125,7 @@
                                         </a>
                                         <form method="post" action="${pageContext.request.contextPath}/friends/action">
                                             <input type="hidden" name="action" value="delete">
-                                            <input type="hidden" name="id" value="${user.id}">
+                                            <input type="hidden" name="id" value="${friendship.friend.id}">
                                             <button class="btn btn-outline-danger btn-sm mt-2">
                                                 <i class="bi bi-trash me-1"></i>Supprimer
                                             </button>
