@@ -60,6 +60,19 @@
 
         <input type="range" id="scroll-x" min="0" max="1000" value="0">
 
+        <div class="player-bar">
+            <button id="player-play" class="player-btn" title="Lecture / Pause">
+                <i class="bi bi-play-fill"></i>
+            </button>
+            <button id="player-stop" class="player-btn" title="Arrêt">
+                <i class="bi bi-stop-fill"></i>
+            </button>
+            <button id="player-mode" class="player-btn" title="Mode de lecture">
+                <i class="bi bi-music-note"></i> Piste active
+            </button>
+            <span id="player-time" class="player-time">M1 T1</span>
+        </div>
+
         <div class="editor-toolbar">
             <button id="tool-draw" class="btn btn-sm btn-primary active">
                 <i class="bi bi-pencil-fill"></i> Crayon
@@ -232,6 +245,36 @@
     </div>
 </div>
 
+<%-- Modal création de piste --%>
+<div class="modal fade" id="modal-new-track" tabindex="-1" aria-labelledby="modal-new-track-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-new-track-label">Nouvelle piste</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="new-track-name" class="form-label">Nom</label>
+                    <input type="text" class="form-control" id="new-track-name" placeholder="Ex : Mélodie, Basse…">
+                </div>
+                <div class="mb-3">
+                    <label for="new-track-instrument" class="form-label">Instrument</label>
+                    <select class="form-select" id="new-track-instrument"></select>
+                </div>
+                <div class="mb-3">
+                    <label for="new-track-color" class="form-label">Couleur</label>
+                    <input type="color" class="form-control form-control-color" id="new-track-color" value="#4a9eff">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="btn-create-track">Créer la piste</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     var COMPOSITION_DATA = {
         id: ${composition.id},
@@ -242,7 +285,6 @@
     };
 </script>
 <script src="${pageContext.request.contextPath}/js/editor.js"></script>
-<script src="${pageContext.request.contextPath}/js/Client.js"></script>
 <script>
     window.addEventListener('load', function () {
         initEditor(COMPOSITION_DATA.tracks, 4);

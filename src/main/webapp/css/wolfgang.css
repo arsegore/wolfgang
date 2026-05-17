@@ -104,3 +104,46 @@
     color: #6a8aaa;
     margin-left: 12px;
 }
+
+.player-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #0a0a1a;
+    border-top: 1px solid #2a2a4a;
+    padding: 6px 12px;
+}
+
+.player-btn {
+    background: #1a1a2e;
+    color: #bbb;
+    border: 1px solid #2a2a4a;
+    padding: 4px 12px;
+    font-size: 13px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+}
+
+.player-btn:hover {
+    background: #22223a;
+    color: #fff;
+}
+
+.player-btn.active {
+    background: #3a3a6a;
+    color: #fff;
+    border-color: #5a5aaa;
+}
+
+.player-btn.all-mode {
+    border-color: #4a8a4a;
+    color: #6ada6a;
+}
+
+.player-time {
+    font-family: monospace;
+    font-size: 12px;
+    color: #6a8aaa;
+    margin-left: 8px;
+}

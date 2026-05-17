@@ -17,16 +17,40 @@ var totalBeats       = 32; // nb total de temps chargés par défaut
 var beatsPerBar      = 4; // nb de temps par mesure
 var currentTool      = 'draw'; // outil sélectionné par défaut
 
+// player
+var playerMode        = 'track'; // 'track' | 'all'
+var playerPlaying     = false;
+var playerBeat        = 0;       // position courante en temps (float)
+var playerBeatAtStart = 0;       // position au moment du dernier play
+var playerAudioCtx    = null;
+var playerAudioStart  = 0;       // audioCtx.currentTime au moment du play
+var playerSources     = [];      // oscillateurs schedulés
+var playerRAF         = null;
+
 var canvas, ctx; // pour dessiner...
 var scrollXInput, scrollYInput;
 var tabsContainer, cursorInfo;
 
 var ws; // websocket de l'éditeur
 
+function computeTotalBeats() {
+    var max, i, j, t, n;
+    max = 32;
+    for (i = 0; i < tracks.length; i++) {
+        t = tracks[i];
+        for (j = 0; j < t.notes.length; j++) {
+            n   = t.notes[j];
+            max = Math.max(max, n.startBeat + n.duration + beatsPerBar);
+        }
+    }
+    return max;
+}
+
 // démarrage
 function initEditor(tracksData, bpb) {
     tracks      = tracksData || [];
     beatsPerBar = bpb || 4;
+    totalBeats  = computeTotalBeats();
 
     // récup des éléments html
     canvas        = document.getElementById('midi-canvas');
@@ -49,6 +73,7 @@ function initEditor(tracksData, bpb) {
     updateScrollbarLimits();
     syncScrollbars();
     setupEvents();
+    initPlayer();
     render();
 }
 
@@ -78,10 +103,8 @@ function initWebSocket() {
                         duration: response.duration,
                         velocity: response.velocity
                     });
-                    if (response.startBeat + 1 > totalBeats) {
-                        totalBeats = response.startBeat + 1 + beatsPerBar;
-                        updateScrollbarLimits();
-                    }
+                    totalBeats = computeTotalBeats();
+                    updateScrollbarLimits();
                     render();
                 }
             }
@@ -92,6 +115,8 @@ function initWebSocket() {
                 var index = track.notes.findIndex(function(n) { return n.id === response.noteId; });
                 if (index >= 0) {
                     track.notes.splice(index, 1);
+                    totalBeats = computeTotalBeats();
+                    updateScrollbarLimits();
                     render();
                 }
             });
@@ -347,6 +372,8 @@ function render() {
         ctx.fillText('Aucune piste — ajoutez-en une pour commencer', canvas.width / 2, canvas.height / 2);
         ctx.textAlign = 'left';
     }
+
+    drawPlayhead();
 }
 
 // dessine la grille en fond
@@ -549,4 +576,200 @@ function lightenColor(hex, amount) {
 
 function pad2(s) {
     return s.length === 1 ? '0' + s : s;
+}
+
+// ------
+// partie lecteur
+
+function initPlayer() {
+    document.getElementById('player-play').addEventListener('click', onPlayerPlay);
+    document.getElementById('player-stop').addEventListener('click', onPlayerStop);
+    document.getElementById('player-mode').addEventListener('click', onPlayerMode);
+    playerUpdateUI();
+}
+
+function onPlayerPlay() {
+    if (playerPlaying) { playerPause(); } else { playerPlay(); }
+}
+
+function onPlayerStop() {
+    playerStop();
+}
+
+function onPlayerMode() {
+    playerMode = (playerMode === 'track') ? 'all' : 'track';
+    playerUpdateUI();
+}
+
+function playerPlay() {
+    if (tracks.length === 0) return;
+
+    if (!playerAudioCtx) {
+        playerAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (playerAudioCtx.state === 'suspended') {
+        playerAudioCtx.resume();
+    }
+
+    playerPlaying     = true;
+    playerBeatAtStart = playerBeat;
+    playerAudioStart  = playerAudioCtx.currentTime;
+
+    playerScheduleNotes();
+    playerUpdateUI();
+    playerRAF = requestAnimationFrame(playerTick);
+}
+
+function playerPause() {
+    playerPlaying = false;
+    if (playerRAF) { cancelAnimationFrame(playerRAF); playerRAF = null; }
+    playerSources.forEach(function(s) { try { s.stop(0); } catch(e) {} });
+    playerSources = [];
+    playerUpdateUI();
+}
+
+function playerStop() {
+    playerPause();
+    playerBeat = 0;
+    playerUpdateUI();
+    render();
+}
+
+function playerTick() {
+    var elapsed, beatsPerSec, maxBeat;
+
+    if (!playerPlaying) return;
+
+    beatsPerSec = COMPOSITION_DATA.tempo / 60;
+    elapsed     = playerAudioCtx.currentTime - playerAudioStart;
+    playerBeat  = playerBeatAtStart + elapsed * beatsPerSec;
+    maxBeat     = playerComputeMaxBeat();
+
+    if (playerBeat >= maxBeat) {
+        playerBeat = 0;
+        playerStop();
+        return;
+    }
+
+    playerScrollToFollow();
+    playerUpdateUI();
+    render();
+    playerRAF = requestAnimationFrame(playerTick);
+}
+
+function playerScheduleNotes() {
+    var tracksToPlay, beatsPerSec, delay, dur, freq, osc, gain, t0, vel;
+
+    tracksToPlay = (playerMode === 'all') ? tracks : [tracks[activeTrackIndex]];
+    beatsPerSec  = COMPOSITION_DATA.tempo / 60;
+
+    tracksToPlay.forEach(function(track) {
+        track.notes.forEach(function(note) {
+            if (note.startBeat + note.duration <= playerBeat) return;
+
+            delay = Math.max(0, (note.startBeat - playerBeat) / beatsPerSec);
+            dur   = note.duration / beatsPerSec;
+            freq  = 440 * Math.pow(2, (note.pitch - 69) / 12);
+            vel   = ((note.velocity || 100) / 127) * 0.25;
+
+            osc  = playerAudioCtx.createOscillator();
+            gain = playerAudioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(playerAudioCtx.destination);
+
+            osc.type            = 'triangle';
+            osc.frequency.value = freq;
+
+            t0 = playerAudioCtx.currentTime + delay;
+            gain.gain.setValueAtTime(0, t0);
+            gain.gain.linearRampToValueAtTime(vel, t0 + 0.01);
+            gain.gain.setValueAtTime(vel, t0 + Math.max(0.02, dur - 0.06));
+            gain.gain.linearRampToValueAtTime(0, t0 + dur);
+
+            osc.start(t0);
+            osc.stop(t0 + dur);
+            playerSources.push(osc);
+        });
+    });
+}
+
+function playerComputeMaxBeat() {
+    var max, tracksToPlay;
+
+    max          = 0;
+    tracksToPlay = (playerMode === 'all') ? tracks : [tracks[activeTrackIndex]];
+    tracksToPlay.forEach(function(track) {
+        track.notes.forEach(function(note) {
+            max = Math.max(max, note.startBeat + note.duration);
+        });
+    });
+    return max || totalBeats;
+}
+
+function playerScrollToFollow() {
+    var px, visW, maxX;
+
+    px   = KEY_W + playerBeat * CELL_W - scrollX;
+    visW = canvas.width - KEY_W;
+
+    if (px > canvas.width - CELL_W * 4) {
+        maxX    = Math.max(0, totalBeats * CELL_W - visW);
+        scrollX = Math.min(maxX, playerBeat * CELL_W - visW / 2);
+        syncScrollbars();
+    } else if (px < KEY_W) {
+        scrollX = Math.max(0, playerBeat * CELL_W - CELL_W);
+        syncScrollbars();
+    }
+}
+
+function playerUpdateUI() {
+    var playBtn, modeBtn, bar, beat, timeEl;
+
+    playBtn = document.getElementById('player-play');
+    modeBtn = document.getElementById('player-mode');
+    timeEl  = document.getElementById('player-time');
+
+    playBtn.innerHTML = playerPlaying
+        ? '<i class="bi bi-pause-fill"></i>'
+        : '<i class="bi bi-play-fill"></i>';
+    playBtn.classList.toggle('active', playerPlaying);
+
+    if (playerMode === 'all') {
+        modeBtn.innerHTML = '<i class="bi bi-music-note-list"></i> Toutes les pistes';
+        modeBtn.classList.add('all-mode');
+    } else {
+        modeBtn.innerHTML = '<i class="bi bi-music-note"></i> Piste active';
+        modeBtn.classList.remove('all-mode');
+    }
+
+    bar  = Math.floor(playerBeat / beatsPerBar) + 1;
+    beat = Math.floor(playerBeat % beatsPerBar) + 1;
+    if (timeEl) timeEl.textContent = 'M' + bar + ' T' + beat;
+}
+
+function drawPlayhead() {
+    var x;
+
+    if (!playerPlaying && playerBeat === 0) return;
+
+    x = KEY_W + playerBeat * CELL_W - scrollX;
+    if (x < KEY_W || x > canvas.width) return;
+
+    ctx.save();
+
+    ctx.strokeStyle = 'rgba(255, 80, 80, 0.9)';
+    ctx.lineWidth   = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x, HEADER_H);
+    ctx.lineTo(x, canvas.height);
+    ctx.stroke();
+
+    ctx.fillStyle = '#ff5050';
+    ctx.beginPath();
+    ctx.moveTo(x - 5, 0);
+    ctx.lineTo(x + 5, 0);
+    ctx.lineTo(x, HEADER_H);
+    ctx.fill();
+
+    ctx.restore();
 }
