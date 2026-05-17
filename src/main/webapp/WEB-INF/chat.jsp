@@ -18,7 +18,7 @@
 
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <div id="messages" style="height: 400px; overflow-y: scroll; border: 1px solid #eee; padding: 15px; background: #f9f9f9;"></div>
+                    <div id="messages" class="wf-chat-messages wf-chat-messages--tall"></div>
 
                     <div class="input-group mt-3">
                         <input type="text" id="messageInput" class="form-control" placeholder="Tapez votre message...">
