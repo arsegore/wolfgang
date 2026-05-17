@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS compositions (
     description TEXT,
     tempo INT DEFAULT 120,
     access_type ENUM('public', 'link', 'private') DEFAULT 'private',
+    public_editable TINYINT(1) DEFAULT 0,
     owner_id INT NOT NULL,
     created_at DATETIME DEFAULT NOW(),
     updated_at DATETIME DEFAULT NOW(),
