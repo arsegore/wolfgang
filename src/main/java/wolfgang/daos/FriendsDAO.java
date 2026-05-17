@@ -197,6 +197,7 @@ public class FriendsDAO {
                     u.email,
                     u.password,
                     u.is_admin,
+                    u.is_verified,
                     u.created_at,
                     u.updated_at,
                     f.requested_at AS friendship_date
@@ -226,6 +227,7 @@ public class FriendsDAO {
                         rs.getString("email"),
                         rs.getString("password"),
                         rs.getBoolean("is_admin"),
+                        rs.getBoolean("is_verified"),
                         rs.getObject("created_at", LocalDateTime.class),
                         rs.getObject("updated_at", LocalDateTime.class)
                 );
@@ -254,6 +256,7 @@ public class FriendsDAO {
                     u.email,
                     u.password,
                     u.is_admin,
+                    u.is_verified,
                     u.created_at,
                     u.updated_at,
                     f.requested_at AS friendship_date
@@ -283,6 +286,7 @@ public class FriendsDAO {
                         rs.getString("email"),
                         rs.getString("password"),
                         rs.getBoolean("is_admin"),
+                        rs.getBoolean("is_verified"),
                         rs.getObject("created_at", LocalDateTime.class),
                         rs.getObject("updated_at", LocalDateTime.class)
                 );
