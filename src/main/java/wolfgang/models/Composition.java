@@ -17,6 +17,8 @@ public class Composition {
 
     private String accessType;
 
+    private boolean publicEditable;
+
     private User owner;
 
     private LocalDateTime createdAt;
@@ -85,6 +87,14 @@ public class Composition {
 
     public void setAccessType(String accessType) {
         this.accessType = accessType;
+    }
+
+    public boolean isPublicEditable() {
+        return publicEditable;
+    }
+
+    public void setPublicEditable(boolean publicEditable) {
+        this.publicEditable = publicEditable;
     }
 
     public User getOwner() {
