@@ -109,6 +109,16 @@ public class FriendsDAO {
     }
 
     /**
+     * Supprime une demande d'amis entre 2 utilisateurs
+     * @param user1 premier utilisateur
+     * @param user2 second utilisateur
+     * @return vrai si la suppression a réussi, faux sinon
+     */
+    public boolean supprimerDemande(User user1, User user2) {
+        return supprimerAmitie(user1, user2); // c'est la même requête SQL
+    }
+
+    /**
      * Récupère la liste des amis d'un utilisateur
      * @param user l'utilisateur
      * @return la liste des amis
