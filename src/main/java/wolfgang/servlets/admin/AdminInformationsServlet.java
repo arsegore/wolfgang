@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import wolfgang.config.DatabaseConfig;
 import wolfgang.daos.InformationDAO;
+import wolfgang.models.Information;
 import wolfgang.models.User;
 import wolfgang.utils.FlashMessageUtils;
 
@@ -41,16 +42,29 @@ public class AdminInformationsServlet extends HttpServlet {
             return;
         }
 
-        String idParam = req.getParameter("id");
-        if (idParam == null || idParam.isBlank()) {
-            resp.sendRedirect(req.getContextPath()+"/admin/informations");
-            return;
-        }
+        String action = req.getParameter("action");
 
-        if (informationDAO.delete(Integer.parseInt(idParam))) {
-            FlashMessageUtils.setFlash(req, "success", "Actualité supprimée avec succès.");
+        if ("create".equals(action)) {
+            String title = req.getParameter("title");
+            String description = req.getParameter("description");
+            if (title == null || title.isBlank()) {
+                FlashMessageUtils.setFlash(req, "error", "Le titre est obligatoire.");
+            } else if (informationDAO.create(new Information(title.trim(), description != null ? description.trim() : ""))) {
+                FlashMessageUtils.setFlash(req, "success", "Actualité créée avec succès.");
+            } else {
+                FlashMessageUtils.setFlash(req, "error", "Erreur lors de la création de l'actualité.");
+            }
         } else {
-            FlashMessageUtils.setFlash(req, "error", "Erreur lors de la suppression de l'actualité.");
+            String idParam = req.getParameter("id");
+            if (idParam == null || idParam.isBlank()) {
+                resp.sendRedirect(req.getContextPath() + "/admin/informations");
+                return;
+            }
+            if (informationDAO.delete(Integer.parseInt(idParam))) {
+                FlashMessageUtils.setFlash(req, "success", "Actualité supprimée avec succès.");
+            } else {
+                FlashMessageUtils.setFlash(req, "error", "Erreur lors de la suppression de l'actualité.");
+            }
         }
 
         resp.sendRedirect(req.getContextPath() + "/admin/informations");

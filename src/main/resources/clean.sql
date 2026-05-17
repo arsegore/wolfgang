@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS informations;
 DROP TABLE IF EXISTS notes;
 DROP TABLE IF EXISTS composition_members;
 DROP TABLE IF EXISTS tracks;

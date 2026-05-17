@@ -73,3 +73,10 @@ CREATE TABLE IF NOT EXISTS friends (
     FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE,
     CHECK (user_id != friend_id)
 );
+
+CREATE TABLE IF NOT EXISTS informations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    created_at DATETIME DEFAULT NOW()
+);
