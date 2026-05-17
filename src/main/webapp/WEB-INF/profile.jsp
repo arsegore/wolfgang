@@ -38,7 +38,6 @@
                     <div class="card shadow-sm h-100">
                         <div class="card-body p-4">
                             <h5 class="card-title">${user.username}</h5>
-                            <br>
 
                             <c:if test="${isOwnProfile}">
                                 <p class="text-muted small">${user.email}</p>
@@ -47,13 +46,13 @@
                             <p class="text-muted small">Compte créé le : ${user.createdAt}</p>
 
                             <c:if test="${isOwnProfile}">
-                                <p class="text-muted small">
-                                    <a href="${pageContext.request.contextPath}/friends">Liste d'amis</a>
-                                </p>
+                                <a class="btn btn-outline-primary btn-sm" href="${pageContext.request.contextPath}/friends">
+                                    <i class="bi bi-people me-1"></i>Amis
+                                </a>
 
-                                <p class="text-muted small">
-                                    <a href="${pageContext.request.contextPath}/composition/list">Mes compositions</a>
-                                </p>
+                                <a class="btn btn-outline-primary btn-sm" href="${pageContext.request.contextPath}/composition/list">
+                                    <i class="bi bi-music-note-list me-1"></i>Compositions
+                                </a>
                             </c:if>
                         </div>
                     </div>
@@ -93,10 +92,13 @@
 
                     <%-- Demande reçue --%>
                     <c:when test="${receivedRequest}">
-                        <div class="d-flex gap-1 mt-2">
+                        <div class="d-flex gap-1">
                             <form method="post" class="d-inline-block" action="${pageContext.request.contextPath}/friends/action">
                                 <input type="hidden" name="action" value="accept">
                                 <input type="hidden" name="id" value="${user.id}">
+                                <button class="btn btn-outline-secondary btn-sm mt-2" disabled>
+                                    <i class="bi bi-hourglass-split me-1"></i>Demande reçue
+                                </button>
                                 <button class="btn btn-outline-success btn-sm mt-2">
                                     <i class="bi bi-check-circle me-1"></i>Accepter
                                 </button>

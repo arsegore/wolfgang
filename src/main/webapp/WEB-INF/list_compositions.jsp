@@ -109,7 +109,9 @@
                 <div class="card shadow-sm border-0 bg-light h-100">
                     <div class="card-body p-4">
                         <h5 class="card-title">${pub.title}</h5>
-                        <p class="small text-primary mb-2">Par ${pub.owner.username} · ${pub.tempo} BPM</p>
+                        <p class="small text-muted mb-2">
+                            Par <strong>${pub.owner.username}</strong> · ${pub.tempo} BPM
+                        </p>
                         <c:choose>
                             <c:when test="${pub.publicEditable}">
                                 <span class="badge bg-success"><i class="bi bi-pencil me-1"></i>Édition libre</span>
