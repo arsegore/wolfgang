@@ -205,6 +205,7 @@ public class CompositionServlet extends HttpServlet {
             trackObj.addProperty("name",       t.getName());
             trackObj.addProperty("color",      t.getColor() != null ? t.getColor() : "#4a9eff");
             trackObj.addProperty("instrument", t.getInstrument() != null ? t.getInstrument().getName() : "");
+            trackObj.addProperty("waveType",   t.getInstrument() != null ? t.getInstrument().getWaveType() : "sine");
 
             JsonArray notesArray = new JsonArray();
             for (Note n : noteDAO.findByTrack(t.getId())) {
@@ -226,8 +227,9 @@ public class CompositionServlet extends HttpServlet {
         JsonArray arr = new JsonArray();
         for (Instrument i : instruments) {
             JsonObject obj = new JsonObject();
-            obj.addProperty("id",   i.getId());
-            obj.addProperty("name", i.getName());
+            obj.addProperty("id",       i.getId());
+            obj.addProperty("name",     i.getName());
+            obj.addProperty("waveType", i.getWaveType());
             arr.add(obj);
         }
         return arr.toString();

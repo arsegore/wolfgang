@@ -34,7 +34,8 @@ public class InstrumentDAO {
             if (rs.next()) {
                 instrument = new Instrument(
                         rs.getInt("id"),
-                        rs.getString("name")
+                        rs.getString("name"),
+                        rs.getString("wave_type")
                 );
             }
         } catch (SQLException e) {
@@ -63,7 +64,8 @@ public class InstrumentDAO {
             while (rs.next()) {
                 instruments.add(new Instrument(
                         rs.getInt("id"),
-                        rs.getString("name")
+                        rs.getString("name"),
+                        rs.getString("wave_type")
                 ));
             }
         } catch (SQLException e) {

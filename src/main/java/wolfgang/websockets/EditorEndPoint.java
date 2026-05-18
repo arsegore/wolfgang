@@ -178,10 +178,11 @@ public class EditorEndPoint {
             response.addProperty("success", true);
 
             JsonObject trackJson = new JsonObject();
-            trackJson.addProperty("id", newId);
-            trackJson.addProperty("name", name);
-            trackJson.addProperty("color", color);
+            trackJson.addProperty("id",       newId);
+            trackJson.addProperty("name",     name);
+            trackJson.addProperty("color",    color);
             trackJson.addProperty("instrument", inst != null ? inst.getName() : "");
+            trackJson.addProperty("waveType", inst != null ? inst.getWaveType() : "sine");
             trackJson.add("notes", new JsonArray());
 
             response.add("track", trackJson);

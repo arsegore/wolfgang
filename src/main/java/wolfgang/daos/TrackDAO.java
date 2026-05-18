@@ -106,7 +106,7 @@ public class TrackDAO {
     public Track findById(int id) {
         Track track = null;
         String sql = """
-					SELECT t.*, i.id as i_id, i.name as i_name
+					SELECT t.*, i.id as i_id, i.name as i_name, i.wave_type as i_wave_type
 					FROM tracks t
 					JOIN instruments i ON t.instrument_id = i.id
 					WHERE t.id = ?;
@@ -140,7 +140,7 @@ public class TrackDAO {
     public List<Track> findByComposition(int compositionId) {
         List<Track> tracks = new ArrayList<>();
         String sql = """
-					SELECT t.*, i.id as i_id, i.name as i_name
+					SELECT t.*, i.id as i_id, i.name as i_name, i.wave_type as i_wave_type
 					FROM tracks t
 					JOIN instruments i ON t.instrument_id = i.id
 					WHERE t.composition_id = ?
@@ -173,7 +173,8 @@ public class TrackDAO {
     private Track hydrateTrack(ResultSet rs, Composition composition) throws SQLException {
         Instrument instrument = new Instrument(
                 rs.getInt("i_id"),
-                rs.getString("i_name")
+                rs.getString("i_name"),
+                rs.getString("i_wave_type")
         );
         return new Track(
                 rs.getInt("id"),
