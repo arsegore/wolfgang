@@ -40,7 +40,11 @@
                         <tr>
                             <td class="text-muted"><%= c.getId() %></td>
                             <td><strong><%= c.getTitle() %></strong></td>
-                            <td><%= c.getOwner().getUsername() %></td>
+                            <td>
+                                <a href="${pageContext.request.contextPath}/profile?id=<%= c.getOwner().getId() %>">
+                                    <%= c.getOwner().getUsername() %>
+                                </a>
+                            </td>
                             <td><%= c.getTempo() %> BPM</td>
                             <td>
                                 <%
