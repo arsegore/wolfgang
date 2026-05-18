@@ -104,7 +104,6 @@ public class EditorEndPoint {
         if (roomSessions != null) {
             for (Session session : roomSessions.values()) {
                 try {
-                    // Utilisation de getBasicRemote().sendText comme dans ton ChatEndPoint
                     session.getBasicRemote().sendText(monMessage);
                 } catch (Exception exception) {
                     System.err.println("Erreur d'envoie éditeur : " + exception.getMessage());

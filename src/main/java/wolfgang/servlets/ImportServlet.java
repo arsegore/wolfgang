@@ -47,25 +47,21 @@ public class ImportServlet extends HttpServlet {
         List<Instrument> instruments = instrumentDAO.findAll();
         Map<String, Integer> trackNameToIdMap = new HashMap<>();
 
-        // CODE DIRECTEMENT ISSU DE LA PAGE 19 DE TON COURS :
-        // On récupère le flux de la requête, on le transforme en lecteur de caractères, puis en lecteur avec buffer
         InputStreamReader isr = new InputStreamReader(req.getInputStream(), StandardCharsets.UTF_8); //
-        BufferedReader entree = new BufferedReader(isr); //
+        BufferedReader entree = new BufferedReader(isr);
 
         try {
             String ligne;
             boolean isHeader = true;
 
-            // Boucle de lecture ligne par ligne jusqu'à la fin du flux (null) [cite: 546, 705]
-            while ((ligne = entree.readLine()) != null) { // [cite: 705]
+            while ((ligne = entree.readLine()) != null) {
                 if (ligne.isBlank()) continue;
 
                 if (isHeader) {
                     isHeader = false;
-                    continue; // On saute la ligne d'en-tête [cite: 705]
+                    continue;
                 }
 
-                // Découpage de la chaîne (Ton cours mentionne StringTokenizer[cite: 723], split(";") fait la même chose)
                 String[] tokens = ligne.split(";");
                 if (tokens.length < 2) continue;
 
@@ -118,11 +114,9 @@ public class ImportServlet extends HttpServlet {
                 }
             }
 
-            // Fermetures réglementaires comme dans ton cours [cite: 711, 712]
             entree.close();
             isr.close();
 
-            // On renvoie un JSON de succès pour que le JavaScript sache qu'il peut rafraîchir la page
             resp.getWriter().write("{\"success\":true}");
 
         } catch (Exception e) {
