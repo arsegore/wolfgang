@@ -72,7 +72,11 @@
                         <div class="card-body p-4">
                             <h5 class="card-title">${entry.key.title}</h5>
                             <p class="small text-muted mb-2">
-                                Par <strong>${entry.key.owner.username}</strong> · ${entry.key.tempo} BPM
+                                Par <strong>
+                                    <a href="${pageContext.request.contextPath}/profile?id=${entry.key.owner.id}">
+                                        ${entry.key.owner.username}
+                                    </a>
+                                </strong> · ${entry.key.tempo} BPM
                             </p>
                             <span class="badge ${entry.value == 'editor' ? 'bg-primary' : 'bg-secondary'}">
                                 <c:choose>
@@ -110,7 +114,11 @@
                     <div class="card-body p-4">
                         <h5 class="card-title">${pub.title}</h5>
                         <p class="small text-muted mb-2">
-                            Par <strong>${pub.owner.username}</strong> · ${pub.tempo} BPM
+                            Par <strong>
+                                <a href="${pageContext.request.contextPath}/profile?id=${pub.owner.id}">
+                                    ${pub.owner.username}
+                                </a>
+                            </strong> · ${pub.tempo} BPM
                         </p>
                         <c:choose>
                             <c:when test="${pub.publicEditable}">
