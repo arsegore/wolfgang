@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import wolfgang.config.DatabaseConfig;
+import wolfgang.daos.CompositionDAO;
 import wolfgang.daos.InstrumentDAO;
 import wolfgang.daos.NoteDAO;
 import wolfgang.daos.TrackDAO;
@@ -27,6 +28,7 @@ public class ImportServlet extends HttpServlet {
     private TrackDAO trackDAO;
     private NoteDAO noteDAO;
     private InstrumentDAO instrumentDAO;
+    private CompositionDAO compositionDAO;
 
     @Override
     public void init() throws ServletException {
@@ -34,6 +36,7 @@ public class ImportServlet extends HttpServlet {
         trackDAO = new TrackDAO();
         noteDAO = new NoteDAO();
         instrumentDAO = new InstrumentDAO();
+        compositionDAO = new CompositionDAO();
     }
 
     @Override
@@ -64,13 +67,20 @@ public class ImportServlet extends HttpServlet {
 
                 // Découpage de la chaîne (Ton cours mentionne StringTokenizer[cite: 723], split(";") fait la même chose)
                 String[] tokens = ligne.split(";");
-                if (tokens.length < 3) continue;
+                if (tokens.length < 2) continue;
 
                 String typeDonnee = tokens[0];
-                String nomPiste = tokens[1];
-                String nomInstrument = tokens[2];
 
-                if ("PISTE".equals(typeDonnee)) {
+                if ("TEMPO".equals(typeDonnee)) {
+                    int importedTempo = Integer.parseInt(tokens[1]);
+                    Composition comp = compositionDAO.findById(compositionId);
+                    if (comp != null) {
+                        comp.setTempo(importedTempo);
+                        compositionDAO.update(comp);
+                    }
+                }else if ("PISTE".equals(typeDonnee)) {
+                    String nomPiste = tokens[1];
+                    String nomInstrument = tokens[2];
                     Instrument instrument = instruments.stream()
                             .filter(i -> i.getName().equalsIgnoreCase(nomInstrument))
                             .findFirst()
@@ -89,6 +99,7 @@ public class ImportServlet extends HttpServlet {
                     }
 
                 } else if ("NOTE".equals(typeDonnee) && tokens.length >= 7) {
+                    String nomPiste = tokens[1];
                     Integer targetTrackId = trackNameToIdMap.get(nomPiste);
 
                     if (targetTrackId != null) {
