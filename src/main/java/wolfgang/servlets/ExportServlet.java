@@ -40,11 +40,10 @@ public class ExportServlet extends HttpServlet {
         List<Track> tracks = trackDAO.findByComposition(compositionId);
 
         String sanitizedTitle = comp.getTitle().replaceAll("[^a-zA-Z0-9\\-_]", "_");
-        resp.setContentType("text/plain;charset=UTF-8"); // Fichier texte brut standard
+        resp.setContentType("text/plain;charset=UTF-8");
         resp.setHeader("Content-Disposition", "attachment; filename=\"" + sanitizedTitle + "_export.txt\"");
 
         try (PrintWriter out = resp.getWriter()) {
-            // pour nous
             out.println("TYPE_DONNEE;NOM_PISTE;INSTRUMENT;HAUTEUR_NOTE;DEBUT_TEMPS;DUREE;VELOCITE");
 
             out.println("TEMPO;" + comp.getTempo() + ";;;;;");
@@ -52,10 +51,8 @@ public class ExportServlet extends HttpServlet {
             for (Track track : tracks) {
                 String instName = (track.getInstrument() != null) ? track.getInstrument().getName() : "Inconnu";
 
-                // Ligne de définition de la piste
                 out.println("PISTE;" + track.getName() + ";" + instName + ";;;;");
 
-                // Extraction des notes de cette piste
                 List<Note> notes = noteDAO.findByTrack(track.getId());
                 for (Note note : notes) {
                     out.println("NOTE;" + track.getName() + ";" + instName + ";"
