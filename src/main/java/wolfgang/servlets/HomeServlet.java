@@ -53,8 +53,11 @@ public class HomeServlet extends HttpServlet {
 
         // Dernière compo de l'utilisateur
         myLastCompo = compositionDAO.findByUser(user.getId(), 1);
-        req.setAttribute("myLastCompo", myLastCompo.getFirst());
-
+        if(myLastCompo != null && !myLastCompo.isEmpty()) {
+            req.setAttribute("myLastCompo", myLastCompo.getFirst());
+        }else{
+            req.setAttribute("myLastCompo", null);
+        }
         // Dernières compos des amis de l'utilisateur
         if (user.getFriends() != null && !user.getFriends().isEmpty()) {
             friendsLastCompo = compositionDAO.findFriendsComposition(user.getFriends(), 2);
