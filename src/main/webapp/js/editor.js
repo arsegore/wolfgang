@@ -770,7 +770,7 @@ function playerScheduleNotes() {
             osc.connect(gain);
             gain.connect(playerAudioCtx.destination);
 
-            osc.type            = 'triangle';
+            osc.type            = track.waveType || 'sine';
             osc.frequency.value = freq;
 
             t0 = playerAudioCtx.currentTime + delay;

@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS instruments (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL
+    name VARCHAR(255) NOT NULL,
+    wave_type ENUM('sine', 'square', 'sawtooth', 'triangle') NOT NULL DEFAULT 'sine'
 );
 
 CREATE TABLE IF NOT EXISTS compositions (
