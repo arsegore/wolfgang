@@ -38,7 +38,11 @@
                         <% for (User u : users) { %>
                         <tr>
                             <td class="text-muted"><%= u.getId() %></td>
-                            <td><strong><%= u.getUsername() %></strong></td>
+                            <td><strong>
+                                <a href="${pageContext.request.contextPath}/profile?id=<%= u.getId() %>">
+                                    <%= u.getUsername() %>
+                                </a>
+                            </strong></td>
                             <td><%= u.getEmail() %></td>
                             <td>
                                 <% if (u.isAdmin()) { %>

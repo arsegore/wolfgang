@@ -15,7 +15,11 @@
 
         <div class="d-flex align-items-center mb-4 gap-3">
             <a href="${pageContext.request.contextPath}/admin/users" class="btn btn-outline-secondary btn-sm">← Retour</a>
-            <h1 class="h3 mb-0">Modifier <%= editedUser.getUsername() %></h1>
+            <h1 class="h3 mb-0">Modifier 
+                <a href="${pageContext.request.contextPath}/profile?id=<%= editedUser.getId() %>">
+                    <%= editedUser.getUsername() %>
+                </a>
+            </h1>
         </div>
 
         <div class="card shadow-sm" style="max-width: 520px;">
