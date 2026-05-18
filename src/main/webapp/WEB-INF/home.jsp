@@ -77,7 +77,12 @@
                                         <div class="card shadow-sm border-0 bg-light">
                                             <div class="card-body p-4">
                                                 <h5 class="card-title">${comp.title}</h5>
-                                                <p class="small text-primary">Par : ${comp.owner.username}</p>
+                                                <p class="small text-primary">
+                                                    Par : 
+                                                    <a href="${pageContext.request.contextPath}/profile?id=${comp.owner.id}">
+                                                        ${comp.owner.username}
+                                                    </a>
+                                                </p>
                                             </div>
                                             <div class="card-footer bg-transparent border-0 p-3">
                                                 <a href="${pageContext.request.contextPath}/composition/view?id=${comp.id}"
@@ -115,7 +120,12 @@
                         <div class="card shadow-sm border-0 bg-light h-100">
                             <div class="card-body p-4">
                                 <h5 class="card-title">${comp.title}</h5>
-                                <p class="small text-primary">Par : ${comp.owner.username}</p>
+                                <p class="small text-primary">
+                                    Par : 
+                                    <a href="${pageContext.request.contextPath}/profile?id=${comp.owner.id}">
+                                        ${comp.owner.username}
+                                    </a>
+                                </p>
                             </div>
                             <div class="card-footer bg-transparent border-0 p-3">
                                 <a href="${pageContext.request.contextPath}/composition/view?id=${comp.id}" class="btn btn-outline-secondary w-100">Consulter</a>

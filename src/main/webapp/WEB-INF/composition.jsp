@@ -162,7 +162,11 @@
                     <h5 class="card-title border-bottom pb-2 mb-3">Informations</h5>
                     <ul class="list-unstyled mb-0">
                         <li class="mb-2">
-                            <strong>Propriétaire :</strong> <span class="text-primary">${composition.owner.username}</span>
+                            <strong>Propriétaire :</strong> <span class="text-primary">
+                                <a href="${pageContext.request.contextPath}/profile?id=${composition.owner.id}">
+                                    ${composition.owner.username}
+                                </a>
+                            </span>
                         </li>
                         <li class="mb-2">
                             <div class="d-flex align-items-center">
@@ -253,7 +257,11 @@
                                                 ${entry.key.username.substring(0,1).toUpperCase()}
                                             </div>
                                             <div>
-                                                <div class="fw-semibold small">${entry.key.username}</div>
+                                                <div class="fw-semibold small">
+                                                    <a href="${pageContext.request.contextPath}/profile?id=${entry.key.id}">
+                                                        ${entry.key.username}
+                                                    </a>
+                                                </div>
                                                 <c:choose>
                                                     <c:when test="${entry.key.id == composition.owner.id}">
                                                         <span class="badge bg-warning text-dark py-1">Propriétaire</span>
