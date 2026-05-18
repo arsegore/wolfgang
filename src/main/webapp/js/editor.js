@@ -1,37 +1,37 @@
-var KEY_W       = 62; // largeur du clavier à gauche
-var HEADER_H    = 28; // hauteur de la règle des temps en haut
-var CELL_W      = 40; // largeur colonne (d'1 temps du coup)
-var CELL_H      = 14; // hauteur de ligne (= 1 demi-ton)
-var PITCH_MIN   = 24; // note la plus basse, C1 
-var PITCH_MAX   = 107; // note la plus haute, B7 
-var PITCHES     = PITCH_MAX - PITCH_MIN + 1; // nb de notes
+var KEY_W = 62; // largeur du clavier à gauche
+var HEADER_H = 28; // hauteur de la règle des temps en haut
+var CELL_W = 40; // largeur colonne (d'1 temps du coup)
+var CELL_H = 14; // hauteur de ligne (= 1 demi-ton)
+var PITCH_MIN = 24; // note la plus basse, C1 
+var PITCH_MAX = 107; // note la plus haute, B7 
+var PITCHES = PITCH_MAX - PITCH_MIN + 1; // nb de notes
 
-var NOTE_NAMES      = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+var NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 var BLACK_SEMITONES = [1, 3, 6, 8, 10];
 
-var tracks           = []; // alimenté ddepuis le json
+var tracks = []; // alimenté ddepuis le json
 var activeTrackIndex = 0; // la track choisie
-var scrollX          = 0; // val par défaut du scroll horizontal
-var scrollY          = 0; // idem vertical
-var totalBeats       = 32; // nb total de temps chargés par défaut
-var beatsPerBar      = 4; // nb de temps par mesure
-var currentTool      = 'draw'; // outil sélectionné par défaut
+var scrollX = 0; // val par défaut du scroll horizontal
+var scrollY = 0; // idem vertical
+var totalBeats = 32; // nb total de temps chargés par défaut
+var beatsPerBar = 4; // nb de temps par mesure
+var currentTool = 'draw'; // outil sélectionné par défaut
 
 var RESIZE_HANDLE_W = 6; // largeur (px) de la zone de redimensionnement sur le bord droit d'une note
 
 // état du redimensionnement en cours
-var resizing    = false;
-var resizeNote  = null;
+var resizing = false;
+var resizeNote = null;
 
 // player
-var playerMode        = 'track'; // 'track' | 'all'
-var playerPlaying     = false;
-var playerBeat        = 0;       // position courante en temps (float)
+var playerMode = 'track'; // 'track' | 'all'
+var playerPlaying = false;
+var playerBeat = 0;       // position courante en temps (float)
 var playerBeatAtStart = 0;       // position au moment du dernier play
-var playerAudioCtx    = null;
-var playerAudioStart  = 0;       // audioCtx.currentTime au moment du play
-var playerSources     = [];      // oscillateurs schedulés
-var playerRAF         = null;
+var playerAudioCtx = null;
+var playerAudioStart = 0;       // audioCtx.currentTime au moment du play
+var playerSources = [];      // oscillateurs schedulés
+var playerRAF = null;
 
 var canvas, ctx; // pour dessiner...
 var scrollXInput, scrollYInput;
@@ -45,7 +45,7 @@ function computeTotalBeats() {
     for (i = 0; i < tracks.length; i++) {
         t = tracks[i];
         for (j = 0; j < t.notes.length; j++) {
-            n   = t.notes[j];
+            n = t.notes[j];
             max = Math.max(max, n.startBeat + n.duration + beatsPerBar);
         }
     }
@@ -54,17 +54,17 @@ function computeTotalBeats() {
 
 // démarrage
 function initEditor(tracksData, bpb) {
-    tracks      = tracksData || [];
+    tracks = tracksData || [];
     beatsPerBar = bpb || 4;
-    totalBeats  = computeTotalBeats();
+    totalBeats = computeTotalBeats();
 
     // récup des éléments html
-    canvas        = document.getElementById('midi-canvas');
-    ctx           = canvas.getContext('2d');
-    scrollXInput  = document.getElementById('scroll-x');
-    scrollYInput  = document.getElementById('scroll-y');
+    canvas = document.getElementById('midi-canvas');
+    ctx = canvas.getContext('2d');
+    scrollXInput = document.getElementById('scroll-x');
+    scrollYInput = document.getElementById('scroll-y');
     tabsContainer = document.getElementById('track-tabs');
-    cursorInfo    = document.getElementById('cursor-info');
+    cursorInfo = document.getElementById('cursor-info');
 
     resizeCanvas();
 
@@ -87,20 +87,20 @@ function initEditor(tracksData, bpb) {
 function initWebSocket() {
     ws = new WebSocket("ws://" + window.location.host + COMPOSITION_DATA.contextPath + '/editeur/' + COMPOSITION_DATA.id);
 
-    ws.onopen = function() {
+    ws.onopen = function () {
         console.log("WS connected for composition #" + COMPOSITION_DATA.id);
     };
 
-    ws.onmessage = function(event) {
+    ws.onmessage = function (event) {
         var response = JSON.parse(event.data);
         if (!response.success) return;
 
         // une note a été ajt
         if (response.action === 'NOTE_ADDED') {
-            var targetTrack = tracks.find(function(t) { return t.id === response.trackId; });
+            var targetTrack = tracks.find(function (t) { return t.id === response.trackId; });
             if (targetTrack) {
                 // check pour éviter les doublons (au moins côté client)
-                var exists = targetTrack.notes.some(function(n) { return n.id === response.id; });
+                var exists = targetTrack.notes.some(function (n) { return n.id === response.id; });
                 if (!exists) {
                     targetTrack.notes.push({
                         id: response.id,
@@ -117,8 +117,8 @@ function initWebSocket() {
         }
         // une note a été redimensionnée
         else if (response.action === 'NOTE_RESIZED') {
-            tracks.forEach(function(track) {
-                var note = track.notes.find(function(n) { return n.id === response.noteId; });
+            tracks.forEach(function (track) {
+                var note = track.notes.find(function (n) { return n.id === response.noteId; });
                 if (note) {
                     note.duration = response.duration;
                     totalBeats = computeTotalBeats();
@@ -129,8 +129,8 @@ function initWebSocket() {
         }
         // une note a été supprimée
         else if (response.action === 'NOTE_DELETED') {
-            tracks.forEach(function(track) {
-                var index = track.notes.findIndex(function(n) { return n.id === response.noteId; });
+            tracks.forEach(function (track) {
+                var index = track.notes.findIndex(function (n) { return n.id === response.noteId; });
                 if (index >= 0) {
                     track.notes.splice(index, 1);
                     totalBeats = computeTotalBeats();
@@ -147,11 +147,11 @@ function initWebSocket() {
         }
     };
 
-    ws.onerror = function(error) {
+    ws.onerror = function (error) {
         console.error("Erreur communication sur l'éditeur : ", error);
     };
 
-    ws.onclose = function() {
+    ws.onclose = function () {
         console.log("Connexion à l'éditeur perdue.");
     };
 }
@@ -282,7 +282,7 @@ function onMouseDown(e) {
     // redimensionnement : bord droit d'une note
     handle = findResizeHandle(pos);
     if (handle) {
-        resizing   = true;
+        resizing = true;
         resizeNote = handle;
         canvas.style.cursor = 'ew-resize';
         document.addEventListener('mousemove', onResizeMouseMove);
@@ -290,12 +290,12 @@ function onMouseDown(e) {
         return;
     }
 
-    beat  = Math.floor((pos.x - KEY_W + scrollX) / CELL_W);
+    beat = Math.floor((pos.x - KEY_W + scrollX) / CELL_W);
     pitch = PITCH_MAX - Math.floor((pos.y - HEADER_H + scrollY) / CELL_H);
 
     if (pitch < PITCH_MIN || pitch > PITCH_MAX || beat < 0) return;
 
-    track    = tracks[activeTrackIndex];
+    track = tracks[activeTrackIndex];
     existing = findNoteAt(track, beat, pitch);
 
     if (existing >= 0) {
@@ -330,7 +330,7 @@ function onMouseMove(e) {
         return;
     }
 
-    beat  = Math.floor((pos.x - KEY_W + scrollX) / CELL_W);
+    beat = Math.floor((pos.x - KEY_W + scrollX) / CELL_W);
     pitch = PITCH_MAX - Math.floor((pos.y - HEADER_H + scrollY) / CELL_H);
 
     if (pitch < PITCH_MIN || pitch > PITCH_MAX || beat < 0) {
@@ -343,9 +343,9 @@ function onMouseMove(e) {
         canvas.style.cursor = findResizeHandle(pos) ? 'ew-resize' : '';
     }
 
-    noteName  = NOTE_NAMES[pitch % 12];
-    octave    = Math.floor(pitch / 12) - 1;
-    bar       = Math.floor(beat / beatsPerBar) + 1;
+    noteName = NOTE_NAMES[pitch % 12];
+    octave = Math.floor(pitch / 12) - 1;
+    bar = Math.floor(beat / beatsPerBar) + 1;
     beatInBar = (beat % beatsPerBar) + 1;
 
     cursorInfo.textContent = noteName + octave + '  |  Mesure ' + bar + ', Temps ' + beatInBar;
@@ -372,12 +372,12 @@ function findResizeHandle(pos) {
     if (tracks.length === 0) return null;
     var track = tracks[activeTrackIndex];
     for (i = 0; i < track.notes.length; i++) {
-        n         = track.notes[i];
-        nx        = KEY_W + n.startBeat * CELL_W - scrollX;
-        ny        = HEADER_H + (PITCH_MAX - n.pitch) * CELL_H - scrollY;
+        n = track.notes[i];
+        nx = KEY_W + n.startBeat * CELL_W - scrollX;
+        ny = HEADER_H + (PITCH_MAX - n.pitch) * CELL_H - scrollY;
         noteRight = nx + n.duration * CELL_W - 2; // bord droit de la note dessinée
-        noteTop   = ny + 1;
-        noteBottom= ny + CELL_H - 2;
+        noteTop = ny + 1;
+        noteBottom = ny + CELL_H - 2;
         if (pos.x >= noteRight - RESIZE_HANDLE_W && pos.x <= noteRight + 2 &&
             pos.y >= noteTop && pos.y <= noteBottom) {
             return n;
@@ -389,12 +389,12 @@ function findResizeHandle(pos) {
 function onResizeMouseMove(e) {
     var rect, x, rawBeat, newRightEdge;
     if (!resizing || !resizeNote) return;
-    rect        = canvas.getBoundingClientRect();
-    x           = e.clientX - rect.left;
-    rawBeat     = (x - KEY_W + scrollX) / CELL_W;
-    newRightEdge= Math.max(resizeNote.startBeat + 1, Math.round(rawBeat));
+    rect = canvas.getBoundingClientRect();
+    x = e.clientX - rect.left;
+    rawBeat = (x - KEY_W + scrollX) / CELL_W;
+    newRightEdge = Math.max(resizeNote.startBeat + 1, Math.round(rawBeat));
     resizeNote.duration = newRightEdge - resizeNote.startBeat;
-    totalBeats  = computeTotalBeats();
+    totalBeats = computeTotalBeats();
     updateScrollbarLimits();
     render();
 }
@@ -483,7 +483,7 @@ function drawGridBackground() {
         }
 
         ctx.strokeStyle = (semitone === 0) ? '#383860' : '#242436';
-        ctx.lineWidth   = (semitone === 0) ? 1 : 0.5;
+        ctx.lineWidth = (semitone === 0) ? 1 : 0.5;
         ctx.beginPath();
         ctx.moveTo(KEY_W, y);
         ctx.lineTo(w, y);
@@ -495,7 +495,7 @@ function drawGridBackground() {
         if (x < KEY_W || x > w) continue;
 
         ctx.strokeStyle = (b % beatsPerBar === 0) ? '#3e3e62' : '#252538';
-        ctx.lineWidth   = (b % beatsPerBar === 0) ? 1 : 0.5;
+        ctx.lineWidth = (b % beatsPerBar === 0) ? 1 : 0.5;
         ctx.beginPath();
         ctx.moveTo(x, HEADER_H);
         ctx.lineTo(x, h);
@@ -583,11 +583,11 @@ function drawNotes() {
     track = tracks[activeTrackIndex];
     color = track.color || '#4a9eff';
     light = lightenColor(color, 50);
-    w     = canvas.width;
-    h     = canvas.height;
+    w = canvas.width;
+    h = canvas.height;
 
     for (i = 0; i < track.notes.length; i++) {
-        n  = track.notes[i];
+        n = track.notes[i];
         nx = KEY_W + n.startBeat * CELL_W - scrollX;
         ny = HEADER_H + (PITCH_MAX - n.pitch) * CELL_H - scrollY;
         nw = n.duration * CELL_W - 2;
@@ -633,9 +633,9 @@ function onAddTrackClick() {
 function onCreateTrack() {
     var name, instrumentId, color;
 
-    name         = document.getElementById('new-track-name').value.trim();
+    name = document.getElementById('new-track-name').value.trim();
     instrumentId = parseInt(document.getElementById('new-track-instrument').value);
-    color        = document.getElementById('new-track-color').value;
+    color = document.getElementById('new-track-color').value;
 
     if (!name) {
         document.getElementById('new-track-name').focus();
@@ -704,9 +704,9 @@ function playerPlay() {
         playerAudioCtx.resume();
     }
 
-    playerPlaying     = true;
+    playerPlaying = true;
     playerBeatAtStart = playerBeat;
-    playerAudioStart  = playerAudioCtx.currentTime;
+    playerAudioStart = playerAudioCtx.currentTime;
 
     playerScheduleNotes();
     playerUpdateUI();
@@ -716,7 +716,7 @@ function playerPlay() {
 function playerPause() {
     playerPlaying = false;
     if (playerRAF) { cancelAnimationFrame(playerRAF); playerRAF = null; }
-    playerSources.forEach(function(s) { try { s.stop(0); } catch(e) {} });
+    playerSources.forEach(function (s) { try { s.stop(0); } catch (e) { } });
     playerSources = [];
     playerUpdateUI();
 }
@@ -734,9 +734,9 @@ function playerTick() {
     if (!playerPlaying) return;
 
     beatsPerSec = COMPOSITION_DATA.tempo / 60;
-    elapsed     = playerAudioCtx.currentTime - playerAudioStart;
-    playerBeat  = playerBeatAtStart + elapsed * beatsPerSec;
-    maxBeat     = playerComputeMaxBeat();
+    elapsed = playerAudioCtx.currentTime - playerAudioStart;
+    playerBeat = playerBeatAtStart + elapsed * beatsPerSec;
+    maxBeat = playerComputeMaxBeat();
 
     if (playerBeat >= maxBeat) {
         playerBeat = 0;
@@ -754,23 +754,23 @@ function playerScheduleNotes() {
     var tracksToPlay, beatsPerSec, delay, dur, freq, osc, gain, t0, vel;
 
     tracksToPlay = (playerMode === 'all') ? tracks : [tracks[activeTrackIndex]];
-    beatsPerSec  = COMPOSITION_DATA.tempo / 60;
+    beatsPerSec = COMPOSITION_DATA.tempo / 60;
 
-    tracksToPlay.forEach(function(track) {
-        track.notes.forEach(function(note) {
+    tracksToPlay.forEach(function (track) {
+        track.notes.forEach(function (note) {
             if (note.startBeat + note.duration <= playerBeat) return;
 
             delay = Math.max(0, (note.startBeat - playerBeat) / beatsPerSec);
-            dur   = note.duration / beatsPerSec;
-            freq  = 440 * Math.pow(2, (note.pitch - 69) / 12);
-            vel   = ((note.velocity || 100) / 127) * 0.25;
+            dur = note.duration / beatsPerSec;
+            freq = 440 * Math.pow(2, (note.pitch - 69) / 12);
+            vel = ((note.velocity || 100) / 127) * 0.25;
 
-            osc  = playerAudioCtx.createOscillator();
+            osc = playerAudioCtx.createOscillator();
             gain = playerAudioCtx.createGain();
             osc.connect(gain);
             gain.connect(playerAudioCtx.destination);
 
-            osc.type            = track.waveType || 'sine';
+            osc.type = track.waveType || 'sine';
             osc.frequency.value = freq;
 
             t0 = playerAudioCtx.currentTime + delay;
@@ -789,10 +789,10 @@ function playerScheduleNotes() {
 function playerComputeMaxBeat() {
     var max, tracksToPlay;
 
-    max          = 0;
+    max = 0;
     tracksToPlay = (playerMode === 'all') ? tracks : [tracks[activeTrackIndex]];
-    tracksToPlay.forEach(function(track) {
-        track.notes.forEach(function(note) {
+    tracksToPlay.forEach(function (track) {
+        track.notes.forEach(function (note) {
             max = Math.max(max, note.startBeat + note.duration);
         });
     });
@@ -802,11 +802,11 @@ function playerComputeMaxBeat() {
 function playerScrollToFollow() {
     var px, visW, maxX;
 
-    px   = KEY_W + playerBeat * CELL_W - scrollX;
+    px = KEY_W + playerBeat * CELL_W - scrollX;
     visW = canvas.width - KEY_W;
 
     if (px > canvas.width - CELL_W * 4) {
-        maxX    = Math.max(0, totalBeats * CELL_W - visW);
+        maxX = Math.max(0, totalBeats * CELL_W - visW);
         scrollX = Math.min(maxX, playerBeat * CELL_W - visW / 2);
         syncScrollbars();
     } else if (px < KEY_W) {
@@ -820,7 +820,7 @@ function playerUpdateUI() {
 
     playBtn = document.getElementById('player-play');
     modeBtn = document.getElementById('player-mode');
-    timeEl  = document.getElementById('player-time');
+    timeEl = document.getElementById('player-time');
 
     playBtn.innerHTML = playerPlaying
         ? '<i class="bi bi-pause-fill"></i>'
@@ -835,7 +835,7 @@ function playerUpdateUI() {
         modeBtn.classList.remove('all-mode');
     }
 
-    bar  = Math.floor(playerBeat / beatsPerBar) + 1;
+    bar = Math.floor(playerBeat / beatsPerBar) + 1;
     beat = Math.floor(playerBeat % beatsPerBar) + 1;
     if (timeEl) timeEl.textContent = 'M' + bar + ' T' + beat;
 }
@@ -851,7 +851,7 @@ function drawPlayhead() {
     ctx.save();
 
     ctx.strokeStyle = 'rgba(255, 80, 80, 0.9)';
-    ctx.lineWidth   = 1.5;
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(x, HEADER_H);
     ctx.lineTo(x, canvas.height);
