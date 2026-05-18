@@ -47,6 +47,8 @@ public class ExportServlet extends HttpServlet {
             // pour nous
             out.println("TYPE_DONNEE;NOM_PISTE;INSTRUMENT;HAUTEUR_NOTE;DEBUT_TEMPS;DUREE;VELOCITE");
 
+            out.println("TEMPO;" + comp.getTempo() + ";;;;;");
+
             for (Track track : tracks) {
                 String instName = (track.getInstrument() != null) ? track.getInstrument().getName() : "Inconnu";
 
